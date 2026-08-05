@@ -169,8 +169,10 @@ jobs:
           # database, so clang-tidy parses it with no include paths and the first
           # `#include "canforge/..."` fails. Headers still get analysed through
           # the .cpp files that include them; HeaderFilterRegex decides which.
+          # tui/ is skipped here: this job configures with the TUI off, so ftxui's
+          # headers are not on disk for clang-tidy to parse.
           FILES=$(git ls-files '*.cpp' \
-            | grep -E '^(core|text|dbc|transport|isotp|uds|sim|tui|cli|fuzz)/' \
+            | grep -E '^(core|text|dbc|transport|isotp|uds|sim|cli|fuzz)/' \
             | grep -v '/tests/' || true)
           echo "$FILES"
           # Which checks are fatal is declared in .clang-tidy. Forcing '*' here
