@@ -1,0 +1,27 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/canforgeTargets.cmake")
+
+# Components map one-to-one onto the architecture layers. A component counts as
+# found when its imported target actually exists in the targets file, so
+# asking for a layer that was disabled at build time fails loudly instead of
+# silently linking nothing.
+set(_canforge_components core text dbc transport isotp uds sim)
+foreach(_comp IN LISTS _canforge_components)
+  if(TARGET canforge::${_comp})
+    set(canforge_${_comp}_FOUND TRUE)
+  else()
+    set(canforge_${_comp}_FOUND FALSE)
+  endif()
+endforeach()
+
+foreach(_comp IN LISTS canforge_FIND_COMPONENTS)
+  if(NOT _comp IN_LIST _canforge_components)
+    set(canforge_FOUND FALSE)
+    set(canforge_NOT_FOUND_MESSAGE
+        "Unknown canforge component '${_comp}'; known: ${_canforge_components}")
+    return()
+  endif()
+endforeach()
+
+check_required_components(canforge)

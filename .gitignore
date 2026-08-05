@@ -1,0 +1,6 @@
+build/
+build-*/
+out/
+.cache/
+compile_commands.json
+*.user

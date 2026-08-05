@@ -1,0 +1,28 @@
+$ head -c 2048 /dev/urandom > firmware.bin
+$ canforge uds --virtual --download firmware.bin
+
+ReadDataByIdentifier VIN           ok
+  VIN                              CANFORGE0SIM00001
+ReadDTCInformation                 ok
+  DTC                              P0103-01  testFailed, confirmedDTC
+  DTC                              P0117-16  pendingDTC
+  DTC                              U000A-00  confirmedDTC, warningIndicatorRequested
+
+flashing 2048 bytes from /tmp/firmware.bin
+DiagnosticSessionControl prog      ok
+SecurityAccess requestSeed         ok
+SecurityAccess sendKey             ok
+RoutineControl eraseMemory         ok (after responsePending)
+RequestDownload                    ok
+
+TransferData 256 / 2048 bytes
+TransferData 512 / 2048 bytes
+TransferData 768 / 2048 bytes
+TransferData 1024 / 2048 bytes
+TransferData 1280 / 2048 bytes
+TransferData 1536 / 2048 bytes
+TransferData 1792 / 2048 bytes
+TransferData 2048 / 2048 bytes
+RequestTransferExit                ok
+RoutineControl checksum            ok
+checksum from ECU 0x0004088E, expected 0x0004088E: match

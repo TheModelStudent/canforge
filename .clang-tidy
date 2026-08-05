@@ -1,0 +1,29 @@
+# The enabled checks encode the project's hard constraints: no owning raw
+# pointers, no new/delete, value semantics by default.
+Checks: >
+  bugprone-*,
+  cppcoreguidelines-owning-memory,
+  cppcoreguidelines-no-malloc,
+  cppcoreguidelines-prefer-member-initializer,
+  cppcoreguidelines-pro-type-const-cast,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-reinterpret-cast,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-special-member-functions,
+  clang-analyzer-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-function-cognitive-complexity,
+  -readability-braces-around-statements,
+  -bugprone-branch-clone
+
+WarningsAsErrors: 'bugprone-*,cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-cstyle-cast'
+HeaderFilterRegex: '.*/canforge/.*'
+FormatStyle: file

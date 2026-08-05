@@ -1,0 +1,7 @@
+BasedOnStyle: Google
+Standard: c++17
+ColumnLimit: 88
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Inline
+IncludeBlocks: Preserve

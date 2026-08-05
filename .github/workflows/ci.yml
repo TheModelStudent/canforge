@@ -1,0 +1,233 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 0'   # the long fuzzing job, weekly
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.cc }} / ${{ matrix.build_type }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { cc: gcc-11,   cxx: g++-11,     build_type: Debug }
+          - { cc: gcc-11,   cxx: g++-11,     build_type: RelWithDebInfo }
+          - { cc: gcc-12,   cxx: g++-12,     build_type: RelWithDebInfo }
+          - { cc: clang-14, cxx: clang++-14, build_type: RelWithDebInfo }
+          - { cc: clang-15, cxx: clang++-15, build_type: RelWithDebInfo }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y ninja-build ${{ matrix.cc }} ${{ matrix.cxx }}
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER=${{ matrix.cc }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          -DCANFORGE_WERROR=ON
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
+
+  sanitizers:
+    name: ${{ matrix.san }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        san: [address-undefined, thread]
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build clang-15
+      - name: Configure
+        run: |
+          if [ "${{ matrix.san }}" = "thread" ]; then
+            FLAGS="-fsanitize=thread -g -O1"
+          else
+            FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -g -O1"
+          fi
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_EXE_LINKER_FLAGS="$FLAGS"
+      - run: cmake --build build
+      - name: Test
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          ASAN_OPTIONS: detect_leaks=1
+          TSAN_OPTIONS: halt_on_error=1
+        # The no-allocation proof replaces the global operator new, which cannot
+        # coexist with a sanitizer's own allocator; it runs unsanitised in the
+        # build job instead.
+        run: ctest --test-dir build --output-on-failure -E 'NoAlloc'
+
+  soak:
+    name: one hour soak under ASan
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build clang-15
+      - name: Configure
+        run: |
+          FLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O1"
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_EXE_LINKER_FLAGS="$FLAGS" \
+            -DCANFORGE_BUILD_TUI=OFF
+      - run: cmake --build build --target canforge_soak
+      - name: Soak
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+        # 3600 seconds of simulated traffic. The binary asserts that the
+        # resident set is flat after warm-up and exits non-zero if it is not.
+        run: ./build/bench/canforge_soak 3600 sim/tests/data/vehicle.cfg dbc/tests/data/powertrain.dbc
+
+  fuzz-smoke:
+    name: fuzz corpus replay
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build clang-15
+      - name: Configure with libFuzzer
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DCANFORGE_FUZZ_LIBFUZZER=ON -DCANFORGE_BUILD_TUI=OFF \
+            -DCANFORGE_BUILD_TESTS=OFF
+      - run: cmake --build build --target fuzz_dbc fuzz_blf fuzz_asc fuzz_isotp
+      - name: Replay the committed corpus
+        # Every input that ever crashed a parser is in the corpus, so this turns
+        # each past crash into a permanent regression test.
+        run: |
+          for t in dbc blf asc isotp; do ./build/fuzz/fuzz_$t fuzz/corpus/$t/*; done
+      - name: Two minutes on each target
+        run: |
+          for t in dbc blf asc isotp; do
+            ./build/fuzz/fuzz_$t fuzz/corpus/$t -max_total_time=120 \
+              -print_final_stats=1 -artifact_prefix=./crash-$t-
+          done
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-crashes
+          path: crash-*
+
+  fuzz-long:
+    name: 10M executions per target
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [dbc, blf, asc, isotp]
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build clang-15
+      - run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_COMPILER=clang++-15 \
+            -DCANFORGE_FUZZ_LIBFUZZER=ON -DCANFORGE_BUILD_TUI=OFF \
+            -DCANFORGE_BUILD_TESTS=OFF
+      - run: cmake --build build --target fuzz_${{ matrix.target }}
+      - name: Fuzz
+        run: |
+          ./build/fuzz/fuzz_${{ matrix.target }} fuzz/corpus/${{ matrix.target }} \
+            -runs=10000000 -print_final_stats=1 \
+            -artifact_prefix=./crash-${{ matrix.target }}-
+      - uses: actions/upload-artifact@v4
+        with:
+          name: corpus-${{ matrix.target }}
+          path: fuzz/corpus/${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-crashes-${{ matrix.target }}
+          path: crash-*
+
+  clang-tidy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-15
+      - run: >
+          cmake -S . -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          -DCMAKE_BUILD_TYPE=Debug -DCANFORGE_BUILD_TUI=OFF
+      - name: Build first so generated headers exist
+        run: cmake --build build
+      - name: Run clang-tidy on canforge sources only
+        run: |
+          FILES=$(git ls-files '*.cpp' '*.hpp' \
+            | grep -E '^(core|text|dbc|transport|isotp|uds|sim|tui|cli|fuzz)/' \
+            | grep -v '/tests/' || true)
+          echo "$FILES"
+          clang-tidy-15 -p build --warnings-as-errors='*' $FILES
+
+  format:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y clang-format-15
+      - run: |
+          git ls-files '*.cpp' '*.hpp' \
+            | xargs clang-format-15 --dry-run --Werror
+
+  install-and-consume:
+    name: find_package consumer
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Build and install canforge
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCANFORGE_BUILD_TESTS=OFF -DCANFORGE_BUILD_TUI=OFF \
+            -DCANFORGE_BUILD_CLI=OFF -DCANFORGE_BUILD_BENCH=OFF \
+            -DCANFORGE_BUILD_FUZZ=OFF -DCMAKE_INSTALL_PREFIX=$PWD/stage
+          cmake --build build --target install
+      - name: Consume it
+        run: |
+          cmake -S tests/consume -B build-consume -G Ninja -DCMAKE_PREFIX_PATH=$PWD/stage
+          cmake --build build-consume
+          ./build-consume/consumer
+
+  vcan:
+    name: SocketCAN on vcan0
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build can-utils
+      - name: Bring up vcan0
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+          ip -details link show vcan0
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCANFORGE_BUILD_TUI=OFF
+      - run: cmake --build build
+      - name: The SocketCAN tests against a real kernel interface
+        run: ctest --test-dir build --output-on-failure -R 'SocketCan'
+      - name: Run the simulator against vcan0 and read it back with candump
+        run: |
+          timeout 6 candump -l vcan0 &
+          ./build/cli/canforge sim --config sim/tests/data/vehicle.cfg \
+            --database dbc/tests/data/powertrain.dbc --bus vcan0 --duration 4 --quiet
+          sleep 1
+          wc -l candump-*.log
+
+  benchmarks:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCANFORGE_BUILD_TUI=OFF
+      - run: cmake --build build --target canforge_bench_codec canforge_bench_pipeline
+      - run: ./build/bench/canforge_bench_codec
+      - run: ./build/bench/canforge_bench_pipeline
