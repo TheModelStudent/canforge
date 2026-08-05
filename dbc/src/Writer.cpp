@@ -176,6 +176,7 @@ std::string write_string(const Database& db, const WriteOptions& opt) {
 
   os << "BS_:";
   if (db.bit_timing().has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     const auto& bt = *db.bit_timing();
     os << ' ' << bt.baudrate << " : " << bt.btr1 << ',' << bt.btr2;
   }
