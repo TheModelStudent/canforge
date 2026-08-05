@@ -130,7 +130,8 @@ class BitReader {
       }
       const int count = static_cast<int>(table.counts()[length]);
       if (code - first < count) {
-        const auto at = static_cast<std::size_t>(index + (code - first));
+        const auto off = static_cast<std::size_t>(code - first);
+        const auto at = static_cast<std::size_t>(index) + off;
         if (at >= table.symbols().size()) {
           return -1;
         }
@@ -275,7 +276,7 @@ Result<std::vector<std::uint8_t>> inflate_raw(const std::uint8_t* data,
   // The hint comes from the file being parsed, so it is not trusted: clamp it
   // rather than reserving whatever a four-byte field asks for.
   const std::size_t hint = expected_size != 0 ? expected_size : size * 4u;
-  out.reserve(std::min(hint, std::size_t{1024u * 1024u}));
+  out.reserve(std::min(hint, std::size_t{1024} * 1024));
 
   BitReader in(data, size);
   bool final_block = false;
