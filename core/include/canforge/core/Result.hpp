@@ -288,12 +288,14 @@ inline Status ok() noexcept {
 #define CANFORGE_TRY_ID_(a, b) CANFORGE_TRY_CAT_(a, b)
 
 /// `CANFORGE_TRY(auto x, expr);` binds on success, returns the Error on failure.
+// NOLINTBEGIN(bugprone-macro-parentheses) decl is a declaration, not a value
 #define CANFORGE_TRY(decl, expr)                              \
   auto CANFORGE_TRY_ID_(canforge_try_, __LINE__) = (expr);    \
   if (!CANFORGE_TRY_ID_(canforge_try_, __LINE__)) {           \
     return CANFORGE_TRY_ID_(canforge_try_, __LINE__).error(); \
   }                                                           \
   decl = std::move(CANFORGE_TRY_ID_(canforge_try_, __LINE__)).value()
+// NOLINTEND(bugprone-macro-parentheses)
 
 /// `CANFORGE_CHECK(expr);` for calls whose value is not needed.
 #define CANFORGE_CHECK(expr)                                    \
