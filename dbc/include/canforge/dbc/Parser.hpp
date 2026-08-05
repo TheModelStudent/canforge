@@ -8,7 +8,7 @@
 /// Error handling has two channels on purpose: Result carries only what a
 /// caller can branch on -- a code and a location, with a literal message,
 /// because core::Error must stay trivially copyable -- while DiagnosticSink
-/// carries the human-readable text and holds many problems rather than one.
+/// carries the human-readable text and holds many problems, not one.
 /// Parsing resynchronises on the next ; or top-level keyword, so a single typo
 /// does not hide the other nine.
 

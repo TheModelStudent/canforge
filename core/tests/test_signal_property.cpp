@@ -193,7 +193,7 @@ TEST(CodecProperty, PhysicalRoundTripWithinQuantisationStep) {
 
     // Draw a target uniformly from the representable physical range. Very wide
     // signals with a large factor produce ranges that exceed what a double can
-    // resolve to within half a step, so those are skipped rather than tested
+    // resolve to within half a step, so those are skipped and not tested
     // with a meaningless tolerance.
     const double lo = s.physical_floor();
     const double hi = s.physical_ceiling();
@@ -273,7 +273,7 @@ TEST(CodecProperty, DeclaredRangeSaturates) {
 }
 
 /// Without a declared range, encoding still saturates at the widest value the
-/// bit field can hold rather than wrapping around.
+/// bit field can hold and not wrap around.
 TEST(CodecProperty, BitWidthSaturates) {
   for (std::uint8_t len = 1; len <= 64; ++len) {
     for (const Signedness sign : {Signedness::Unsigned, Signedness::Signed}) {

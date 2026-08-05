@@ -64,7 +64,7 @@ std::string format_number(double v) {
   if (std::isinf(v)) {
     return v > 0 ? "1e308" : "-1e308";
   }
-  // An exact integer is written without a decimal point, which is what every
+  // An exact integer is written without a decimal point, the way every
   // tool does and what keeps a factor of 1 from becoming "1.0000000000000000".
   if (v == std::floor(v) && std::fabs(v) < 1e15) {
     std::ostringstream os;
@@ -72,7 +72,7 @@ std::string format_number(double v) {
     return os.str();
   }
   // Otherwise find the shortest precision that reads back bit-identically, so
-  // that 0.1 stays "0.1" rather than becoming 0.10000000000000001.
+  // that 0.1 stays "0.1" and not become 0.10000000000000001.
   for (int precision = 6; precision <= 17; ++precision) {
     std::ostringstream os;
     os.precision(precision);

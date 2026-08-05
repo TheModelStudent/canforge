@@ -19,7 +19,7 @@
 namespace canforge::sim {
 
 /// Simulated time. Nothing in sim/ reads a wall clock or sleeps: everything is
-/// driven by an explicit timestamp, which is what makes the whole simulator
+/// driven by an explicit timestamp, which keeps the whole simulator
 /// reproducible and its tests instant.
 class IClock {
  public:

@@ -121,7 +121,7 @@ TEST(Lexer, Numbers) {
 
 TEST(Lexer, IdentifierStartingWithADigit) {
   // Node names like `3PMS` are not legal per the documented grammar but do
-  // occur; the lexer reclassifies rather than rejecting the file.
+  // occur; the lexer reclassifies instead of rejecting the file.
   const auto l = lex("BU_: 3PMS ECU_1 _private\n");
   EXPECT_TRUE(l.tokens[2].is_word("3PMS"));
   EXPECT_EQ(l.tokens[2].kind, TokenKind::Identifier);

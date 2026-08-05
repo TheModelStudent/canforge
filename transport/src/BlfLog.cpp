@@ -2,10 +2,10 @@
 //
 // Vector BLF reader.
 //
-// BLF is not a published format. This implementation follows the layout used
-// by Vector's own binlog SDK headers and by python-can's reader, which are the
-// two de-facto references. Where they disagree, the disagreement is called out
-// in a comment and handled by sniffing rather than by guessing.
+// BLF was never published. What's here follows the layout in Vector's own
+// binlog SDK headers and in python-can's reader, the two de-facto references.
+// They don't agree everywhere; where they don't, there's a comment saying so and
+// the code sniffs instead of picking a side.
 //
 // Structure:
 //
@@ -17,11 +17,10 @@
 //   object header v1     objectFlags u32, clientIndex u16, objectVersion u16,
 //                        objectTimeStamp u64                             (16 more)
 //
-// Every object is padded to a four-byte boundary. Almost all real content is
-// wrapped in LOG_CONTAINER objects (type 10) whose payload is a zlib stream
-// holding a further sequence of LOBJ records -- so the reader is recursive by
-// one level, and the inflate it needs is implemented in Inflate.cpp because
-// canforge is not permitted a zlib dependency.
+// Objects are padded to a four-byte boundary. Almost everything real is wrapped
+// in LOG_CONTAINER objects (type 10) whose payload is a zlib stream holding yet
+// more LOBJ records, so the reader recurses exactly one level. The inflate it
+// needs is in Inflate.cpp, since the library layers can't take a zlib dependency.
 
 #include <array>
 #include <cstring>

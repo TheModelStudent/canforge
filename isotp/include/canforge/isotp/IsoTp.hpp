@@ -4,15 +4,15 @@
 
 /// ISO 15765-2 transport protocol.
 ///
-/// Nothing here sleeps, owns a thread, or touches a bus. A session is fed
-/// received frames with `on_frame()` and pushed forward with `poll(now_ns)`,
-/// which returns the frames the caller should transmit. Every timeout is
-/// therefore a comparison against a caller-supplied timestamp, which makes
-/// N_Bs, N_Cr and STmin exactly testable in microseconds against a virtual
-/// clock instead of needing a slow, flaky wall-clock test.
+/// Nothing here sleeps, owns a thread, or touches a bus. You feed a session
+/// received frames with `on_frame()` and push it along with `poll(now_ns)`,
+/// which hands back whatever should go out. Every timeout is then just a
+/// comparison against a timestamp the caller supplies, so N_Bs, N_Cr and STmin
+/// can be tested to the microsecond against a fake clock instead of a slow and
+/// flaky wall-clock test.
 ///
-/// The timing is the part of the standard that is easy to misread. ISO 15765-2
-/// defines six parameters, but they are not all of the same kind:
+/// The timing is the part of the standard that's easy to misread. ISO 15765-2
+/// defines six parameters, but they're not all the same kind of thing:
 ///
 ///   N_As  timeout   sender:   CAN frame transmission (link layer confirm)
 ///   N_Ar  timeout   receiver: CAN frame transmission
@@ -21,24 +21,23 @@
 ///   N_Br  *performance requirement* receiver: FF/block received -> FC sent
 ///   N_Cs  *performance requirement* sender:   FC received -> next CF sent
 ///
-/// N_Br and N_Cs are not timeouts at all: nothing times out on them. They are
-/// budgets the implementation must stay inside, constrained by
+/// N_Br and N_Cs aren't timeouts at all. Nothing times out on them. They're
+/// budgets the implementation has to stay inside, bounded by
 ///
 ///   N_Br + N_Ar < 0.9 * N_Bs        and        N_Cs + N_As < 0.9 * N_Cr
 ///
-/// so modelling them as timeouts -- which implementations frequently do -- is
-/// simply wrong. Here they are configurable delays, and the two inequalities
-/// are checked when a configuration is validated.
+/// Modelling them as timeouts, which plenty of implementations do, is just
+/// wrong. Here they're configurable delays and the two inequalities get checked
+/// when a configuration is validated.
 ///
 /// The default for the four real timeouts is 1000 ms.
 ///
 /// STmin encoding:
 ///   0x00..0x7F   0 to 127 milliseconds
 ///   0xF1..0xF9   100 to 900 microseconds
-///   everything else is reserved, and ISO 15765-2 says a receiver shall treat
-///   a reserved value as 0x7F, i.e. the slowest rate, rather than reject it.
-///   Real ECUs do send reserved values, so that rule is implemented rather
-///   than treated as a protocol error.
+///   everything else is reserved, and ISO 15765-2 says to treat a reserved
+///   value as 0x7F, the slowest rate, not to reject it. Real ECUs do send
+///   reserved values, so that's implemented rather than called an error.
 
 #include <cstdint>
 #include <string_view>

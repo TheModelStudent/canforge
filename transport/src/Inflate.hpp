@@ -12,7 +12,7 @@
 ///
 /// This is decompression of untrusted input, so every table lookup and every
 /// back-reference distance is bounds-checked, and a malformed stream returns
-/// an error rather than reading out of bounds.
+/// an error instead of reading out of bounds.
 
 #include <cstddef>
 #include <cstdint>

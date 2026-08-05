@@ -518,7 +518,7 @@ void Receiver::on_frame(const FdFrame& frame, std::uint64_t now_ns) {
       }
       const auto sn = static_cast<std::uint8_t>(body[0] & 0x0Fu);
       if (sn != sequence_) {
-        // N_WRONG_SN. The standard requires aborting rather than trying to
+        // N_WRONG_SN. The standard requires an abort, not an attempt to
         // resynchronise, because a gap means data was lost.
         result_ = TransferResult::WrongSequence;
         state_ = State::Finished;

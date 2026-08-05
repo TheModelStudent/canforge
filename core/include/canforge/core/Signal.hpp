@@ -21,7 +21,7 @@ namespace canforge::core {
 /// Low `len` bits set. `len` must be in 1..64.
 constexpr std::uint64_t bit_mask(std::uint8_t len) noexcept {
   // Shifting a 64-bit value by 64 is undefined, so the full-width case is
-  // spelled out rather than computed.
+  // spelled out instead.
   return len >= 64u ? ~std::uint64_t{0}
                     : ((std::uint64_t{1} << len) - std::uint64_t{1});
 }
@@ -91,7 +91,7 @@ struct SignalLayout {
   double maximum = 0.0;
 
   /// DBC writes [0|0] when no range is given, so an all-zero range means
-  /// unbounded rather than "the value must be exactly zero".
+  /// unbounded, not "the value must be exactly zero".
   constexpr bool has_range() const noexcept {
     return minimum != 0.0 || maximum != 0.0;
   }

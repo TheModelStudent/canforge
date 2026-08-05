@@ -24,7 +24,7 @@ double seconds_since(clock_type::time_point start) {
 }
 
 /// Build a synthetic DBC with roughly `signal_target` signals, so the parse
-/// benchmark runs on something the size of a real vehicle database rather than
+/// benchmark runs on something the size of a real vehicle database instead of
 /// on the four-message test file.
 std::string synthetic_dbc(std::size_t signal_target) {
   std::ostringstream os;
@@ -148,7 +148,7 @@ int main() {
     double sink = 0.0;
     std::size_t decoded = 0;
     for (std::size_t i = 0; i < kRounds; ++i) {
-      // The allocation-free path, which is what a real receive loop uses.
+      // The allocation-free path, the one a real receive loop uses.
       static_cast<void>(message->for_each_active_signal(
           frame, [&](const core::Signal&, std::uint64_t, double value) {
             sink += value;

@@ -659,7 +659,7 @@ int command_dash(const Args& args) {
           }
         }
       }
-      // Track the wall clock so the dashboard shows real rates rather than
+      // Track the wall clock so the dashboard shows real rates and not
       // running the simulation as fast as the CPU allows.
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
       now = static_cast<std::uint64_t>(

@@ -52,7 +52,7 @@ struct FrameTiming {
 ///
 /// which gives 135 bits for a standard 8-byte frame and 160 for an extended
 /// one, the figures quoted in the CAN response-time literature. Worst case
-/// rather than average, because a simulator that is optimistic about bus load
+/// and not average, because a simulator that is optimistic about bus load
 /// is worse than useless.
 ///
 /// CAN FD is an estimate: arbitration runs at the nominal rate up to and

@@ -4,7 +4,7 @@
 
 /// Hand-rolled stand-in for C++23's std::expected; the core library targets
 /// C++17 and takes no dependencies. Error is trivially copyable and nothing
-/// here throws or allocates, which is what lets the real-time signal codec
+/// here throws or allocates, so the real-time signal codec
 /// return a Result.
 
 #include <cstdint>

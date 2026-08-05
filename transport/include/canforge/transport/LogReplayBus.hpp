@@ -30,7 +30,7 @@ namespace canforge::transport {
 struct ReplayOptions {
   /// 1.0 replays at the recorded rate, 2.0 at twice the speed, 0.5 at half.
   double speed = 1.0;
-  /// Sleep between frames rather than advancing a virtual clock.
+  /// Sleep between frames instead of advancing a virtual clock.
   bool realtime = false;
   /// Start over from the beginning once the log is exhausted.
   bool loop = false;
@@ -42,7 +42,7 @@ struct ReplayOptions {
 class LogReplayBus final : public IBus {
  public:
   /// Reads the whole log up front. A trace worth replaying fits in memory, and
-  /// having the full timeline is what makes seeking and looping possible.
+  /// the full timeline is what allows seeking and looping possible.
   static Result<std::unique_ptr<LogReplayBus>> from_file(const std::string& path,
                                                          ReplayOptions options = {});
   static std::unique_ptr<LogReplayBus> from_records(std::vector<LogRecord> records,

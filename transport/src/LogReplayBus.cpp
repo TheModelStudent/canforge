@@ -92,7 +92,7 @@ Result<FdFrame> LogReplayBus::receive(std::chrono::nanoseconds timeout) {
 
     const LogRecord& record = records_[index_];
     const std::uint64_t offset = record.frame.timestamp_ns() - first_ns_;
-    // Scaling the offset rather than the delay keeps rounding error from
+    // Scaling the offset, not the delay, keeps rounding error from
     // accumulating across a long capture.
     const auto due = static_cast<std::uint64_t>(
         static_cast<double>(offset) / options_.speed);

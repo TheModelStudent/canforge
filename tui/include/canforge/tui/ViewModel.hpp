@@ -93,7 +93,7 @@ class SignalHistory {
 
   /// Map the history onto `rows` sparkline levels, 0 being the bottom.
   /// Returns an empty vector when there is nothing to draw. A flat signal maps
-  /// to the middle row rather than to zero, so a constant does not look like a
+  /// to the middle row, not to zero, so a constant does not look like a
   /// dropout.
   std::vector<int> levels(std::size_t rows) const;
 

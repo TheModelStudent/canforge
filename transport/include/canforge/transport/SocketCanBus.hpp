@@ -32,7 +32,7 @@ struct SocketCanOptions {
   bool fd_optional = true;
 
   /// Deliver frames this socket sent back to itself, which is SocketCAN's
-  /// default and is what makes a single-process test see its own traffic.
+  /// default and lets a single-process test see its own traffic.
   bool loopback = true;
   /// Also receive the frames *this* socket sent. Off by default, matching
   /// SocketCAN, so a sender does not see its own echo.

@@ -23,7 +23,7 @@ using text::TokenKind;
 /// A duration written as `10ms`, `1.5s`, `250us`. The lexer folds `10ms` into
 /// a single identifier (digits followed by letters) but leaves `1.5s` as a
 /// real followed by an identifier, because a real literal stops the
-/// reclassification. Both spellings are accepted here rather than changing the
+/// reclassification. Both spellings are accepted here, which beats changing the
 /// lexer, which the DBC parser also depends on.
 bool duration_from(std::string_view text, std::uint64_t& out) noexcept {
   std::size_t i = 0;
@@ -821,7 +821,7 @@ ConfigParseResult parse_config_string(std::string_view text,
   result.config = parser.run();
 
   // Validate every source expression now, so a typo is reported with the rest
-  // of the parse rather than at the first simulation step.
+  // of the parse and not at the first simulation step.
   for (const NodeSpec& node : result.config.nodes) {
     for (const TxSpec& tx : node.transmits) {
       for (const TxSpec::Binding& b : tx.bindings) {

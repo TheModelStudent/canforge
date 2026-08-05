@@ -2,7 +2,7 @@
 //
 // Round-trip: parse -> write -> parse must produce an identical Database.
 //
-// Comparing databases rather than text is deliberate: a byte diff would fail
+// Comparing databases instead of text is on purpose: a byte diff would fail
 // on whitespace and ordering that no writer should reproduce, and would still
 // pass if the parser dropped a field the writer also never emits.
 

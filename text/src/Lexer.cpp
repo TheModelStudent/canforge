@@ -124,7 +124,7 @@ Source Source::normalise(std::string bytes, std::string name) {
   //    older CANdb++ versions are Latin-1, so comments containing German
   //    umlauts are invalid UTF-8. Since Latin-1 decoding cannot fail, using it
   //    as the fallback means a mis-detected file still round-trips its bytes
-  //    rather than losing them.
+  //    instead of losing them.
   if (!is_valid_utf8(bytes)) {
     bytes = latin1_to_utf8(bytes);
     s.had_latin1_ = true;
@@ -265,7 +265,7 @@ Token Lexer::lex_number() {
   }
 
   // A token like `3PMS` starts with a digit but is a node name, not a number.
-  // Real databases contain such names, so rather than rejecting the file the
+  // Real databases contain such names, so instead of rejecting the file the
   // lexer reclassifies it as an identifier.
   if (is_ident_continue(peek()) && !is_real) {
     while (is_ident_continue(peek())) {
@@ -318,7 +318,7 @@ Token Lexer::lex_string() {
     if (c == '\\') {
       // The published grammar has no escape sequence, but CANdb++ writes \"
       // for an embedded quote and \\ for a backslash, so both are honoured.
-      // Any other backslash is kept verbatim, which is what makes Windows
+      // Any other backslash is kept verbatim, so Windows
       // paths inside comments survive.
       const char next = peek(1);
       if (next == '"' || next == '\\') {

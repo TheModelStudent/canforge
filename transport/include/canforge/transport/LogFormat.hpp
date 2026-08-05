@@ -44,7 +44,7 @@ struct LogRecord {
 };
 
 /// Sequential reader. `next()` returns `LogEndOfFile` when the log is
-/// exhausted, which is an expected outcome rather than an error.
+/// exhausted, which is an expected outcome, not an error.
 class LogReader {
  public:
   LogReader() = default;

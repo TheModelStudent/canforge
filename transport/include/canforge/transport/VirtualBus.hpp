@@ -4,28 +4,26 @@
 
 /// A fully in-process CAN bus.
 ///
-/// The point of this backend is that the whole test suite runs on any
-/// operating system with no kernel modules and no root, while still behaving
-/// like a CAN bus rather than like a message queue. Specifically it models:
+/// This exists so the test suite runs anywhere, with no kernel modules and no
+/// root, and still behaves like a bus instead of a message queue. Two things
+/// make the difference:
 ///
-///   * Bit timing. A frame occupies the medium for a realistic number of
-///     microseconds derived from the bitrate, the identifier format, the
+///   * Bit timing. A frame sits on the medium for a realistic number of
+///     microseconds, worked out from the bitrate, the identifier format, the
 ///     payload length and the worst-case stuff bits (see `frame_timing`).
-///     Nothing is delivered before that time has passed.
+///     Nothing gets delivered before that time is up.
 ///
-///   * Arbitration. When several participants want to transmit at the same
-///     moment, exactly one wins: the frame with the numerically lowest
-///     identifier, comparing the base identifier first and letting a standard
-///     frame beat an extended one with the same base, because the IDE bit is
-///     dominant. The losers do not lose their frame -- they keep it at the
-///     head of their queue and retry at the next arbitration point, which is
-///     what a real controller does and what makes priority inversion and
-///     starvation observable.
+///   * Arbitration. When several participants want the bus at the same moment,
+///     one wins: lowest identifier, base compared first, and a standard frame
+///     beats an extended one on the same base because the IDE bit is dominant.
+///     A loser doesn't drop its frame. It keeps it at the head of its queue and
+///     contends again at the next opportunity, same as a real controller, and
+///     that's what makes priority inversion and starvation reproducible.
 ///
-/// Time is virtual and advanced explicitly, so tests are deterministic and
-/// take no wall-clock time. `receive()` advances the clock by up to its
-/// timeout, which makes the backend a drop-in for a real one in single
-/// threaded code without any test having to know about the clock.
+/// Time is virtual and stepped explicitly, so tests are deterministic and cost
+/// no wall-clock time. `receive()` advances the clock by up to its timeout,
+/// which lets the backend stand in for a real one in single-threaded code
+/// without any test needing to know a clock is involved.
 
 #include <chrono>
 #include <cstdint>
@@ -103,9 +101,9 @@ class VirtualMedium : public std::enable_shared_from_this<VirtualMedium> {
 
   void detach(VirtualBus* who) noexcept;
   /// Arbitrate and begin a transmission if the medium is idle and anything is
-  /// queued. The frame is not delivered until it finishes; a frame is on the
-  /// wire for its whole transmission time, which is what makes the timing
-  /// model observable.
+  /// queued. The frame is not delivered until it finishes; a frame sits on the
+  /// wire for its whole transmission time, which makes the timing model
+  /// observable.
   bool start_transmission();
   void complete_transmission();
   void deliver(const FdFrame& frame, VirtualBus* sender);

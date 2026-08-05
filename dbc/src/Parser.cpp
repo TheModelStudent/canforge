@@ -207,7 +207,7 @@ class Parser {
     auto built = extended ? CanId::extended(id) : CanId::standard(id);
     if (!built) {
       // A 29-bit identifier written without the flag is a common export bug;
-      // accept it as extended rather than rejecting the whole file.
+      // accept it as extended and does not reject the whole file.
       if (!extended && id <= core::kExtendedIdMax) {
         warn(ErrorCode::ParseSemantic, where,
              "identifier does not fit in 11 bits and the extended flag (bit 31) "
@@ -605,7 +605,7 @@ void Parser::parse_signal(Message& message) {
   }
 
   // The signal must fit the message it was declared in. This is a semantic
-  // check rather than a grammatical one, but doing it here rather than in
+  // check, not a grammatical one, but doing it here rather than in
   // Database::validate() is what lets the diagnostic carry a line and column.
   if (!signal.layout().fits(message.dlc())) {
     error(ErrorCode::CodecSignalOutOfBounds, start_token,

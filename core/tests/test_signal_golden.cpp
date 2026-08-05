@@ -2,12 +2,12 @@
 //
 // Golden vectors for the signal codec.
 //
-// Every expected value in this file was worked out by hand from the bit
-// numbering rules, not produced by running the code under test. The comment
-// on each case shows the derivation, so a reviewer can check the arithmetic
-// without trusting the implementation. Several cases are taken from published
-// J1939 parameter group definitions, where the physical result is documented
-// independently of any particular decoder.
+// Every expected value here I worked out by hand from the bit numbering rules.
+// None of it came out of running the code under test, which would prove nothing.
+// Each case carries its derivation in a comment above it, so you can check the
+// arithmetic without taking my word for the implementation. A few cases come
+// from published J1939 parameter groups, where the physical result is on record
+// independently of any decoder at all.
 //
 // The reference payload is
 //
@@ -15,8 +15,8 @@
 //   hex     01    23    45    67    89    AB    CD    EF
 //   bin  00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111
 //
-// chosen because every nibble is distinct, so a byte-order or nibble-order
-// mistake produces a visibly wrong answer rather than a plausible one.
+// picked so every nibble is distinct. Get the byte order or the nibble order
+// wrong and the answer is visibly broken instead of merely plausible.
 
 #include "canforge/core/Signal.hpp"
 

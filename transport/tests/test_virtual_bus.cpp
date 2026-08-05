@@ -119,7 +119,7 @@ TEST(Arbitration, TheLoserRetransmitsRatherThanLosingTheFrame) {
   f.medium->advance(us(270));
   EXPECT_EQ(f.a->pending(), 0u) << "and must win the next arbitration";
 
-  // Both frames eventually land, in priority order rather than in the order
+  // Both frames eventually land, in priority order and not in the order
   // they were queued.
   f.medium->drain();
   const auto first = f.c->receive(ms(0));
@@ -170,7 +170,7 @@ TEST(Arbitration, AHighPriorityTalkerCanStarveALowPriorityOne) {
   // The classic CAN pathology, reproduced deliberately: a node that always has
   // something queued at a low identifier never lets a higher identifier
   // through. Being able to show this is the point of modelling arbitration at
-  // all rather than using a plain queue.
+  // all instead of using a plain queue.
   Fixture f({500000, 0});
   // The low priority frame is queued first and stays queued.
   ASSERT_TRUE(f.b->send(data_frame(0x7FF, 8)).has_value());
@@ -223,7 +223,7 @@ TEST(VirtualBus, ReceiveAdvancesTheClockUpToItsTimeout) {
   Fixture f({500000, 0});
   ASSERT_TRUE(f.a->send(data_frame(0x123, 8)).has_value());
   // Nothing has been transmitted yet, but a receive with a generous timeout
-  // lets the medium run, which is what makes this a drop-in for SocketCAN.
+  // lets the medium run, so this becomes a drop-in for SocketCAN.
   const auto got = f.b->receive(ms(1));
   EXPECT_TRUE(got.has_value());
 }

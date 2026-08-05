@@ -90,7 +90,7 @@ Status Message::validate() const noexcept {
     }
   }
   // Duplicate signal names inside one message make find_signal ambiguous and
-  // break VAL_ / CM_ / BA_ lookups, so they are an error rather than a lint.
+  // break VAL_ / CM_ / BA_ lookups, so they are an error, not a lint.
   for (std::size_t i = 0; i < signals_.size(); ++i) {
     for (std::size_t j = i + 1; j < signals_.size(); ++j) {
       if (signals_[i].name() == signals_[j].name()) {

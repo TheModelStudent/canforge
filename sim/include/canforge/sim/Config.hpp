@@ -4,11 +4,10 @@
 
 /// The simulator's configuration language.
 ///
-/// Deliberately not YAML or JSON: both would be a dependency, and neither
-/// reads well for this. The format is line oriented, scanned with the same
-/// `text::Lexer` the DBC parser uses, and parsed by recursive descent with the
-/// same compiler-style diagnostics -- so a typo in a config file reports a
-/// line, a column and a caret exactly as a broken DBC does.
+/// Not YAML or JSON, because both would be a dependency and neither reads well
+/// for this. It's line oriented and goes through the same `text::Lexer` and the
+/// same recursive descent the DBC parser uses, so a typo in a config file gets
+/// you a line, a column and a caret, just like a broken DBC does.
 ///
 ///     bus vcan0 500000
 ///     database powertrain.dbc

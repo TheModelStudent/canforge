@@ -3,7 +3,7 @@
 // ISO 15765-2 tests.
 //
 // Because the layer is a pure state machine driven by an explicit timestamp,
-// every timeout is exercised by moving a variable rather than by sleeping:
+// every timeout is exercised by moving a variable instead of by sleeping:
 // the whole file runs in milliseconds and is completely deterministic.
 
 #include "canforge/isotp/IsoTp.hpp"

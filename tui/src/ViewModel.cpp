@@ -31,7 +31,7 @@ void SignalHistory::push(double value) {
   while (samples_.size() > kCapacity) {
     samples_.pop_front();
   }
-  // The bounds are recomputed rather than tracked incrementally, because a
+  // The bounds are recomputed instead of tracked incrementally, because a
   // dropped sample can be the one that held the extreme and an incremental
   // minimum would then be wrong for the rest of the session.
   const auto [lo, hi] = std::minmax_element(samples_.begin(), samples_.end());
@@ -156,7 +156,7 @@ void ViewModel::ingest(const core::FdFrame& frame) {
   if (stats_it->count > 0) {
     const double period_ms =
         static_cast<double>(frame.timestamp_ns() - stats_it->last_ns) / 1e6;
-    // A running mean rather than a stored history: the dashboard may watch a
+    // A running mean, not a stored history: the dashboard may watch a
     // bus for hours and keeping every interval would grow without bound.
     const double n = static_cast<double>(stats_it->count);
     stats_it->mean_period_ms =
@@ -165,7 +165,7 @@ void ViewModel::ingest(const core::FdFrame& frame) {
       stats_it->min_period_ms = period_ms;
     }
     stats_it->max_period_ms = std::max(stats_it->max_period_ms, period_ms);
-    // Jitter as peak deviation from the mean, which is what a scheduling
+    // Jitter as peak deviation from the mean, which a scheduling
     // argument cares about; the standard deviation would hide a single late
     // frame, and a single late frame is the interesting one.
     stats_it->jitter_ms =

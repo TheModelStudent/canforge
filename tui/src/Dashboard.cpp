@@ -32,7 +32,7 @@ namespace {
 
 using namespace ftxui;  // NOLINT: ftxui's DSL is unusable when qualified
 
-// Small fixed formatters rather than one variadic helper: passing a runtime
+// Small fixed formatters, not one variadic helper: passing a runtime
 // format string trips -Wformat-nonliteral, and the compiler can no longer
 // check the argument types, which is exactly what that warning is for.
 std::string f0(double v) {

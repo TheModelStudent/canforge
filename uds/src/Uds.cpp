@@ -111,7 +111,7 @@ std::string describe_nrc(std::uint8_t raw) {
     return buffer;
   }
   // The ranges ISO 14229 reserves, so an unrecognised code still says
-  // something useful rather than just "unknown".
+  // something useful instead of just "unknown".
   const char* range = "reserved by ISO 14229";
   if (raw >= 0x38u && raw <= 0x4Fu) {
     range = "reserved for ISO 15764 secured data transmission";

@@ -194,7 +194,7 @@ TEST(NoAlloc, SignalCodecAllocatesNothing) {
 
 TEST(NoAlloc, ErrorPathsAllocateNothing) {
   // A failing operation must not allocate either -- that is the point of an
-  // Error that holds a string_view onto a literal rather than a std::string.
+  // Error that holds a string_view onto a literal and not a std::string.
   SignalLayout s;
   s.start_bit = 60;
   s.bit_length = 16;  // does not fit in 8 bytes

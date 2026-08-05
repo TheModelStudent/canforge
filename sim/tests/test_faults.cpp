@@ -108,7 +108,7 @@ TEST(Faults, FreezeHoldsTheFirstValue) {
   }
   ASSERT_GE(first, 0.0);
   EXPECT_DOUBLE_EQ(last, first) << "a frozen signal never moves";
-  // The plant itself did move, which is what makes the fault visible.
+  // The plant itself did move, so the fault is actually visible.
   EXPECT_GT(sim->vehicle().state().engine_rpm, first + 100.0);
 }
 

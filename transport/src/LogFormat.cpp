@@ -440,7 +440,7 @@ class AscReader final : public LogReader {
       return parse_fd(parts, timestamp_ns);
     }
     // Anything that is not a frame -- ErrorFrame, Statistic, J1939TP -- is
-    // skipped rather than treated as a parse failure.
+    // skipped, not treated as a parse failure.
     if (parts.size() < 6) {
       return Error(ErrorCode::LogEndOfFile, "not a frame line");
     }

@@ -107,7 +107,7 @@ TEST(Validate, ErrorDetailCarriesTheSignalPosition) {
 
 TEST(Range, ZeroZeroMeansUnbounded) {
   // DBC writes [0|0] when no range was specified. Treating that literally
-  // would make every such signal encode as zero, which is what a naive
+  // would make every such signal encode as zero, which a naive
   // implementation does and is always wrong.
   auto s = make(0, 8, ByteOrder::Intel);
   EXPECT_FALSE(s.has_range());

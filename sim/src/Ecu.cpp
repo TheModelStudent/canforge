@@ -159,7 +159,7 @@ std::vector<core::Frame> Ecu::step(std::uint64_t now_ns, const Vehicle* plant) {
         next = shifted < 0 ? 0u : static_cast<std::uint64_t>(shifted);
       }
       // If the simulation was stepped coarsely, do not emit a burst catching
-      // up on every missed cycle: skip forward instead, which is what a real
+      // up on every missed cycle: skip forward instead, the way a real
       // node with a single mailbox does.
       if (next <= now_ns) {
         next = now_ns + tx.cycle_ns;

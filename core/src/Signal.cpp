@@ -241,7 +241,7 @@ double SignalLayout::raw_to_physical(std::uint64_t raw) const noexcept {
 
 std::uint64_t SignalLayout::physical_to_raw(double physical) const noexcept {
   double v = physical;
-  // A declared [min|max] saturates rather than wraps. NaN has no order, so it
+  // A declared [min|max] saturates; it does not wrap. NaN has no order, so it
   // is excluded from the clamp; the integer path below maps it to zero and the
   // float path passes it through, since a float signal can carry a NaN.
   if (has_range() && !std::isnan(v)) {
@@ -277,7 +277,7 @@ std::uint64_t SignalLayout::physical_to_raw(double physical) const noexcept {
   }
 
   // Saturate to what the bit width can hold. The bounds are computed as bit
-  // patterns rather than by casting a double, so that a 64-bit signal -- whose
+  // patterns and not by casting a double, so that a 64-bit signal -- whose
   // extremes are not exactly representable as a double -- still cannot produce
   // an out-of-range floating point to integer conversion, which is UB.
   std::uint64_t out = 0;

@@ -2,12 +2,11 @@
 //
 // A standalone driver for the libFuzzer targets.
 //
-// The targets are written against the libFuzzer entry point so they run under
-// `clang -fsanitize=fuzzer` unchanged. This file provides a `main` so the same
-// targets also build and run with GCC, which has no libFuzzer. It is a
-// mutation fuzzer without coverage feedback -- strictly weaker than libFuzzer,
-// and not a replacement for it -- but it needs no clang, runs anywhere, and is
-// what actually found the bugs listed in the README.
+// The targets use the libFuzzer entry point so they run unchanged under
+// `clang -fsanitize=fuzzer`. This file bolts a `main` onto them so they also
+// build with GCC, which has no libFuzzer. It's a mutation fuzzer with no
+// coverage feedback: strictly weaker, and no substitute for the real thing. But
+// it needs no clang, runs anywhere, and it's what found the bug in the README.
 //
 //   ./fuzz_dbc corpus/dbc 5000000        run 5 million mutated inputs
 //   ./fuzz_dbc file.dbc                  run one file and exit

@@ -3,11 +3,11 @@
 // Soak test: run the simulator and the dashboard's view model together for a
 // long time and assert that memory is flat.
 //
-// The failure this catches is the one unit tests never do -- a container that
-// grows without bound. Every accumulating structure in the project is capped
-// (the trace ring buffer, the signal history, the frames-per-second window,
-// the per-message running mean), and this is what proves the caps are real
-// rather than intended.
+// This catches the failure unit tests never do: a container that quietly grows
+// forever. Everything that accumulates is capped somewhere (the trace ring
+// buffer, the signal history, the frames-per-second window, the per-message
+// running mean). Running it for half an hour is how you find out whether those
+// caps are real or just intended.
 //
 //   ./canforge_soak <seconds> <config> <database>
 //

@@ -265,7 +265,7 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
         return negative(service, Nrc::ServiceNotSupportedInActiveSession);
       }
       if ((sub & 0x01u) != 0u) {
-        // requestSeed. A seed of zero means "already unlocked", which is what
+        // requestSeed. A seed of zero means "already unlocked", which is
         // the standard prescribes and what tools check for.
         security_level_ = sub;
         last_seed_ = unlocked_ ? 0u : (0xC0FFEEu ^ static_cast<std::uint32_t>(

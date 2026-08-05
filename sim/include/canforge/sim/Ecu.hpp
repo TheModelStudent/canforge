@@ -5,7 +5,7 @@
 /// A simulated node: a set of messages it transmits on a schedule, each with
 /// its signals bound either to a generator or to a field of the plant model.
 ///
-/// Rolling counters and checksums are first-class rather than an afterthought,
+/// Rolling counters and checksums are first-class, not an afterthought,
 /// because nearly every real powertrain message carries them and a trace
 /// without them looks wrong to anyone who has stared at one.
 
