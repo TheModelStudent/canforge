@@ -38,6 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
   if (size != 0) {
     std::fwrite(data, 1, size, file);
   }
+  // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
   std::fclose(file);
   auto reader =
       canforge::transport::open_reader(path, canforge::transport::LogFormat::Asc);
