@@ -165,7 +165,11 @@ jobs:
         run: cmake --build build
       - name: Run clang-tidy on canforge sources only
         run: |
-          FILES=$(git ls-files '*.cpp' '*.hpp' \
+          # Translation units only. A header has no entry in the compilation
+          # database, so clang-tidy parses it with no include paths and the first
+          # `#include "canforge/..."` fails. Headers still get analysed through
+          # the .cpp files that include them; HeaderFilterRegex decides which.
+          FILES=$(git ls-files '*.cpp' \
             | grep -E '^(core|text|dbc|transport|isotp|uds|sim|tui|cli|fuzz)/' \
             | grep -v '/tests/' || true)
           echo "$FILES"
