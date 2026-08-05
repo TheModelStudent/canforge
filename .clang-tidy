@@ -25,5 +25,8 @@ Checks: >
   -bugprone-branch-clone
 
 WarningsAsErrors: 'bugprone-*,cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-cstyle-cast'
-HeaderFilterRegex: '.*/canforge/.*'
+# Anchored on the module layout, not on the word "canforge": CI checks the repo
+# out at .../canforge/canforge/, so a looser pattern also matches build/_deps and
+# ends up linting the whole of GoogleTest and ftxui.
+HeaderFilterRegex: '.*/(core|text|dbc|transport|isotp|uds|sim|tui|cli)/(include|src)/.*'
 FormatStyle: file
