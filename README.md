@@ -288,16 +288,25 @@ interface. It found three things, all portability rather than logic:
 The second one is my favourite bug in the project. A test that silently stops
 testing anything is worse than no test, and it took a second compiler to show it.
 
-The clang-tidy job is still red, and it is the one thing here I have not
-finished. It was misconfigured twice over: `HeaderFilterRegex` matched on the
-word "canforge", and CI checks out at `.../canforge/canforge/`, so it was linting
-the whole of GoogleTest and ftxui; and it was being handed `.hpp` files, which
-have no entry in the compilation database and so get parsed with no include
-paths. Both are fixed. What is left is that the check set turns on `modernize-*`
-and `readability-*` wholesale, and the codebase disagrees with a few thousand of
-those on style. Narrowing that to the checks the project actually wants to
-enforce is real work and I would rather leave it visibly unfinished than silence
-the checks to get a green tick.
+The clang-tidy job took three goes to get right. `HeaderFilterRegex` matched on
+the word "canforge" and CI checks out at `.../canforge/canforge/`, so it was
+linting the whole of GoogleTest and ftxui. It was being handed `.hpp` files,
+which have no entry in the compilation database and so get parsed with no
+include paths. And it was linting `tui/` in a build configured with the TUI
+switched off, so ftxui's headers were not on disk to find at all. That last one
+is what actually kept it red, and it presented as nine unrelated errors.
+
+Two of the nine were the phantom `tui/` ones. Three were real: `256u * 1024u *
+1024u` assigned to a `std::size_t` does the multiplication in `unsigned int`,
+and there are two more of that shape in the inflate path. Those are fixed, not
+suppressed. The remaining four are annotated at the site with the check named,
+because each is a false positive: `CANFORGE_TRY` takes a declarator, so its
+argument cannot be parenthesised; the DBC writer checks its optional on the line
+above the dereference; and the two fuzz harnesses own a `FILE*` deliberately.
+
+`modernize-*` and `readability-*` stay advisory rather than fatal. The codebase
+disagrees with a few thousand of them on style, and which checks are errors is
+declared in `.clang-tidy` rather than forced to `*` on the command line.
 
 One more thing worth keeping: the sanitizer build compiles at `-O1` and caught
 two `-Wsign-conversion` warnings the `-O2` build didn't, because the optimiser
