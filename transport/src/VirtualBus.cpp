@@ -13,16 +13,15 @@ std::shared_ptr<VirtualMedium> VirtualMedium::create(BusTiming timing) {
 }
 
 std::unique_ptr<VirtualBus> VirtualMedium::attach(std::string name) {
-  auto bus = std::unique_ptr<VirtualBus>(
-      new VirtualBus(shared_from_this(), std::move(name)));
+  auto bus =
+      std::unique_ptr<VirtualBus>(new VirtualBus(shared_from_this(), std::move(name)));
   participants_.push_back(bus.get());
   return bus;
 }
 
 void VirtualMedium::detach(VirtualBus* who) noexcept {
-  participants_.erase(
-      std::remove(participants_.begin(), participants_.end(), who),
-      participants_.end());
+  participants_.erase(std::remove(participants_.begin(), participants_.end(), who),
+                      participants_.end());
 }
 
 std::size_t VirtualMedium::pending() const noexcept {

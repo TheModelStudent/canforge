@@ -20,8 +20,7 @@ struct Node {
   AttributeMap attributes;
 
   friend bool operator==(const Node& a, const Node& b) {
-    return a.name == b.name && a.comment == b.comment &&
-           a.attributes == b.attributes;
+    return a.name == b.name && a.comment == b.comment && a.attributes == b.attributes;
   }
 };
 
@@ -49,16 +48,12 @@ class Database {
  public:
   const std::string& version() const noexcept { return version_; }
   const std::string& comment() const noexcept { return comment_; }
-  const std::vector<std::string>& new_symbols() const noexcept {
-    return new_symbols_;
-  }
+  const std::vector<std::string>& new_symbols() const noexcept { return new_symbols_; }
   const std::optional<BitTiming>& bit_timing() const noexcept { return bit_timing_; }
   const std::vector<Node>& nodes() const noexcept { return nodes_; }
   const std::vector<Message>& messages() const noexcept { return messages_; }
   std::vector<Message>& messages() noexcept { return messages_; }
-  const std::vector<ValueTable>& value_tables() const noexcept {
-    return value_tables_;
-  }
+  const std::vector<ValueTable>& value_tables() const noexcept { return value_tables_; }
   const std::vector<AttributeDefinition>& attribute_definitions() const noexcept {
     return attribute_definitions_;
   }

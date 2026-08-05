@@ -27,8 +27,7 @@ using text::TokenKind;
 /// lexer, which the DBC parser also depends on.
 bool duration_from(std::string_view text, std::uint64_t& out) noexcept {
   std::size_t i = 0;
-  while (i < text.size() &&
-         ((text[i] >= '0' && text[i] <= '9') || text[i] == '.')) {
+  while (i < text.size() && ((text[i] >= '0' && text[i] <= '9') || text[i] == '.')) {
     ++i;
   }
   if (i == 0) {
@@ -65,8 +64,7 @@ bool number_from(std::string_view text, double& out) noexcept {
     ++i;
   }
   const std::size_t start = i;
-  while (i < text.size() &&
-         ((text[i] >= '0' && text[i] <= '9') || text[i] == '.')) {
+  while (i < text.size() && ((text[i] >= '0' && text[i] <= '9') || text[i] == '.')) {
     ++i;
   }
   if (i == start) {
@@ -155,8 +153,7 @@ class ConfigParser {
       return true;
     }
     // `1500kg` arrives as one identifier.
-    if (current().kind == TokenKind::Identifier &&
-        number_from(current().text, out)) {
+    if (current().kind == TokenKind::Identifier && number_from(current().text, out)) {
       out *= sign;
       advance();
       return true;
@@ -166,8 +163,7 @@ class ConfigParser {
   }
 
   bool duration(std::uint64_t& out) {
-    if (current().kind == TokenKind::Identifier &&
-        duration_from(current().text, out)) {
+    if (current().kind == TokenKind::Identifier && duration_from(current().text, out)) {
       advance();
       return true;
     }
@@ -386,37 +382,55 @@ void ConfigParser::parse_plant() {
     double v = 0.0;
     if (key == "mass") {
       advance();
-      if (number(v)) { p.mass_kg = v; }
+      if (number(v)) {
+        p.mass_kg = v;
+      }
     } else if (key == "wheel_radius") {
       advance();
-      if (number(v)) { p.wheel_radius_m = v; }
+      if (number(v)) {
+        p.wheel_radius_m = v;
+      }
     } else if (key == "drag_area") {
       advance();
-      if (number(v)) { p.drag_area = v; }
+      if (number(v)) {
+        p.drag_area = v;
+      }
     } else if (key == "rolling_resistance") {
       advance();
-      if (number(v)) { p.rolling_resistance = v; }
+      if (number(v)) {
+        p.rolling_resistance = v;
+      }
     } else if (key == "final_drive") {
       advance();
-      if (number(v)) { p.final_drive = v; }
+      if (number(v)) {
+        p.final_drive = v;
+      }
     } else if (key == "idle_rpm") {
       advance();
-      if (number(v)) { p.idle_rpm = v; }
+      if (number(v)) {
+        p.idle_rpm = v;
+      }
     } else if (key == "max_rpm") {
       advance();
-      if (number(v)) { p.max_rpm = v; }
+      if (number(v)) {
+        p.max_rpm = v;
+      }
     } else if (key == "peak_torque") {
       advance();
-      if (number(v)) { p.peak_torque_nm = v; }
+      if (number(v)) {
+        p.peak_torque_nm = v;
+      }
     } else if (key == "ambient_temp") {
       advance();
-      if (number(v)) { p.ambient_temp_c = v; }
+      if (number(v)) {
+        p.ambient_temp_c = v;
+      }
     } else if (key == "gear_ratios") {
       advance();
       std::vector<double> ratios;
-      while ((current().kind == TokenKind::Integer ||
-              current().kind == TokenKind::Real) &&
-             !current().first_on_line) {
+      while (
+          (current().kind == TokenKind::Integer || current().kind == TokenKind::Real) &&
+          !current().first_on_line) {
         ratios.push_back(advance().real);
       }
       if (ratios.empty()) {
@@ -458,8 +472,7 @@ void ConfigParser::parse_drive() {
           event.gear = static_cast<int>(v);
         }
       } else {
-        error("unknown drive input",
-              "expected one of: throttle, brake, gear");
+        error("unknown drive input", "expected one of: throttle, brake, gear");
         skip_line();
         break;
       }
@@ -545,8 +558,7 @@ void ConfigParser::parse_fault() {
     } else if (match_word("active")) {
       fault.active = true;
     } else {
-      error("unknown fault option",
-            "expected one of: node, message, active");
+      error("unknown fault option", "expected one of: node, message, active");
       skip_line();
       break;
     }
@@ -733,8 +745,8 @@ core::Result<SourcePtr> build_one(const std::vector<std::string>& words,
         break;
       }
     }
-    return random_walk(start, step, low, high,
-                       static_cast<std::uint64_t>(seed), interval);
+    return random_walk(start, step, low, high, static_cast<std::uint64_t>(seed),
+                       interval);
   }
   if (kind == "keyframes") {
     std::vector<Keyframe> frames;
@@ -846,8 +858,8 @@ ConfigParseResult parse_config_string(std::string_view text,
           text::Diagnostic d;
           d.severity = Severity::Error;
           d.code = built.error().code();
-          d.message = "signal '" + b.signal + "': " +
-                      std::string(built.error().message());
+          d.message =
+              "signal '" + b.signal + "': " + std::string(built.error().message());
           d.token = b.expression;
           result.diagnostics.add(std::move(d));
         }

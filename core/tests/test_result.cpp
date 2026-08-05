@@ -103,7 +103,8 @@ TEST(Result, AndThenChains) {
 
 Result<int> parse_positive(int v) {
   if (v <= 0) {
-    return Error{ErrorCode::OutOfRange, "not positive", {static_cast<std::uint32_t>(-v), 0}};
+    return Error{
+        ErrorCode::OutOfRange, "not positive", {static_cast<std::uint32_t>(-v), 0}};
   }
   return v;
 }
@@ -126,7 +127,9 @@ TEST(Result, TryMacroPropagates) {
   EXPECT_FALSE(check_positive(0).has_value());
 }
 
-Status always_fails() { return Error{ErrorCode::Unsupported, "nope"}; }
+Status always_fails() {
+  return Error{ErrorCode::Unsupported, "nope"};
+}
 
 Status forwards() {
   CANFORGE_CHECK(always_fails());
@@ -141,7 +144,8 @@ TEST(Result, ErrorCodesAllHaveText) {
   // Every enumerator must have a string; the switch in to_string is
   // -Werror=switch protected, this catches a missing `case` that returns the
   // fallback by accident.
-  for (std::uint16_t i = 0; i <= static_cast<std::uint16_t>(ErrorCode::LogEndOfFile); ++i) {
+  for (std::uint16_t i = 0; i <= static_cast<std::uint16_t>(ErrorCode::LogEndOfFile);
+       ++i) {
     EXPECT_STRNE(to_string(static_cast<ErrorCode>(i)), "unknown error")
         << "missing text for error code " << i;
   }

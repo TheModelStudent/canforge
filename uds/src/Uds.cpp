@@ -10,11 +10,9 @@ namespace {
 using core::Error;
 using core::ErrorCode;
 
-void push_be(std::vector<std::uint8_t>& out, std::uint32_t value,
-             std::uint8_t bytes) {
+void push_be(std::vector<std::uint8_t>& out, std::uint32_t value, std::uint8_t bytes) {
   for (std::uint8_t i = bytes; i > 0; --i) {
-    out.push_back(
-        static_cast<std::uint8_t>((value >> ((i - 1u) * 8u)) & 0xFFu));
+    out.push_back(static_cast<std::uint8_t>((value >> ((i - 1u) * 8u)) & 0xFFu));
   }
 }
 
@@ -22,6 +20,7 @@ void push_be(std::vector<std::uint8_t>& out, std::uint32_t value,
 
 const char* to_string(Service s) noexcept {
   switch (s) {
+      // clang-format off
     case Service::DiagnosticSessionControl:   return "DiagnosticSessionControl";
     case Service::EcuReset:                   return "ECUReset";
     case Service::ClearDiagnosticInformation: return "ClearDiagnosticInformation";
@@ -35,36 +34,44 @@ const char* to_string(Service s) noexcept {
     case Service::TransferData:               return "TransferData";
     case Service::RequestTransferExit:        return "RequestTransferExit";
     case Service::TesterPresent:              return "TesterPresent";
+      // clang-format on
   }
   return "unknown service";
 }
 
 const char* to_string(SessionType s) noexcept {
   switch (s) {
+      // clang-format off
     case SessionType::Default:                return "default";
     case SessionType::Programming:            return "programming";
     case SessionType::ExtendedDiagnostic:     return "extended diagnostic";
     case SessionType::SafetySystemDiagnostic: return "safety system diagnostic";
+      // clang-format on
   }
   return "unknown session";
 }
 
 const char* to_string(Nrc code) noexcept {
   switch (code) {
+      // clang-format off
     case Nrc::PositiveResponse:            return "positive response";
     case Nrc::GeneralReject:               return "general reject";
     case Nrc::ServiceNotSupported:         return "service not supported";
     case Nrc::SubFunctionNotSupported:     return "sub-function not supported";
+    // clang-format on
     case Nrc::IncorrectMessageLengthOrInvalidFormat:
       return "incorrect message length or invalid format";
+      // clang-format off
     case Nrc::ResponseTooLong:             return "response too long";
     case Nrc::BusyRepeatRequest:           return "busy, repeat request";
     case Nrc::ConditionsNotCorrect:        return "conditions not correct";
     case Nrc::RequestSequenceError:        return "request sequence error";
+    // clang-format on
     case Nrc::NoResponseFromSubnetComponent:
       return "no response from subnet component";
     case Nrc::FailurePreventsExecutionOfRequestedAction:
       return "failure prevents execution of the requested action";
+      // clang-format off
     case Nrc::RequestOutOfRange:           return "request out of range";
     case Nrc::SecurityAccessDenied:        return "security access denied";
     case Nrc::InvalidKey:                  return "invalid key";
@@ -74,12 +81,14 @@ const char* to_string(Nrc code) noexcept {
     case Nrc::TransferDataSuspended:       return "transfer data suspended";
     case Nrc::GeneralProgrammingFailure:   return "general programming failure";
     case Nrc::WrongBlockSequenceCounter:   return "wrong block sequence counter";
+    // clang-format on
     case Nrc::RequestCorrectlyReceivedResponsePending:
       return "request correctly received, response pending";
     case Nrc::SubFunctionNotSupportedInActiveSession:
       return "sub-function not supported in the active session";
     case Nrc::ServiceNotSupportedInActiveSession:
       return "service not supported in the active session";
+      // clang-format off
     case Nrc::RpmTooHigh:                  return "engine speed too high";
     case Nrc::RpmTooLow:                   return "engine speed too low";
     case Nrc::EngineIsRunning:             return "engine is running";
@@ -91,14 +100,17 @@ const char* to_string(Nrc code) noexcept {
     case Nrc::VehicleSpeedTooLow:          return "vehicle speed too low";
     case Nrc::ThrottlePedalTooHigh:        return "throttle pedal too high";
     case Nrc::ThrottlePedalTooLow:         return "throttle pedal too low";
+    // clang-format on
     case Nrc::TransmissionRangeNotInNeutral:
       return "transmission range not in neutral";
+      // clang-format off
     case Nrc::TransmissionRangeNotInGear:  return "transmission range not in gear";
     case Nrc::BrakeSwitchNotClosed:        return "brake switch not closed";
     case Nrc::ShifterLeverNotInPark:       return "shifter lever not in park";
     case Nrc::TorqueConverterClutchLocked: return "torque converter clutch locked";
     case Nrc::VoltageTooHigh:              return "voltage too high";
     case Nrc::VoltageTooLow:               return "voltage too low";
+      // clang-format on
   }
   return "unknown";
 }
@@ -132,8 +144,7 @@ std::string format_dtc(std::uint32_t code) {
   char buffer[16];
   // Letter, then one digit from bits 5..4, then three hex nibbles: four
   // characters after the letter, never five.
-  std::snprintf(buffer, sizeof(buffer), "%c%X%X%02X",
-                kLetters[(high >> 6u) & 0x03u],
+  std::snprintf(buffer, sizeof(buffer), "%c%X%X%02X", kLetters[(high >> 6u) & 0x03u],
                 static_cast<unsigned>((high >> 4u) & 0x03u),
                 static_cast<unsigned>(high & 0x0Fu),
                 static_cast<unsigned>((code >> 8u) & 0xFFu));
@@ -190,7 +201,8 @@ Status Client::request(std::vector<std::uint8_t> payload, std::uint64_t now_ns) 
   // A sub-function with bit 7 set tells the server to stay silent on success.
   expect_response_ = true;
   const bool has_sub_function =
-      requested_service_ == static_cast<std::uint8_t>(Service::DiagnosticSessionControl) ||
+      requested_service_ ==
+          static_cast<std::uint8_t>(Service::DiagnosticSessionControl) ||
       requested_service_ == static_cast<std::uint8_t>(Service::EcuReset) ||
       requested_service_ == static_cast<std::uint8_t>(Service::SecurityAccess) ||
       requested_service_ == static_cast<std::uint8_t>(Service::CommunicationControl) ||
@@ -274,8 +286,7 @@ std::vector<core::FdFrame> Client::poll(std::uint64_t now_ns) {
                  "the response could not be reassembled",
                  {static_cast<std::uint32_t>(receiver_.result()), 0}));
     } else if (now_ns >= deadline_ns_) {
-      fail(Error(ErrorCode::TransportTimeout,
-                 "the server did not answer within P2"));
+      fail(Error(ErrorCode::TransportTimeout, "the server did not answer within P2"));
     }
   }
 
@@ -327,7 +338,8 @@ void Client::handle_message(const std::vector<std::uint8_t>& message,
     const std::uint8_t service = message[1];
     const std::uint8_t nrc = message[2];
 
-    if (nrc == static_cast<std::uint8_t>(Nrc::RequestCorrectlyReceivedResponsePending)) {
+    if (nrc ==
+        static_cast<std::uint8_t>(Nrc::RequestCorrectlyReceivedResponsePending)) {
       // 0x78: the server is still working. Switch to P2* and keep waiting.
       // This is the difference between a client that can flash an ECU and one
       // that cannot -- an erase routine easily takes 30 seconds.
@@ -335,8 +347,7 @@ void Client::handle_message(const std::vector<std::uint8_t>& message,
       if (config_.max_response_pending != 0 &&
           pending_count_ > config_.max_response_pending) {
         fail(Error(ErrorCode::TransportTimeout,
-                   "the server kept answering responsePending",
-                   {pending_count_, 0}));
+                   "the server kept answering responsePending", {pending_count_, 0}));
         return;
       }
       deadline_ns_ = now_ns + config_.p2_star_ns;
@@ -371,8 +382,7 @@ void Client::handle_message(const std::vector<std::uint8_t>& message,
   finish(std::move(response));
 }
 
-Status Client::diagnostic_session_control(SessionType session,
-                                          std::uint64_t now_ns,
+Status Client::diagnostic_session_control(SessionType session, std::uint64_t now_ns,
                                           bool suppress_response) {
   auto sub = static_cast<std::uint8_t>(session);
   if (suppress_response) {
@@ -383,13 +393,12 @@ Status Client::diagnostic_session_control(SessionType session,
 }
 
 Status Client::ecu_reset(ResetType type, std::uint64_t now_ns) {
-  return request({static_cast<std::uint8_t>(Service::EcuReset),
-                  static_cast<std::uint8_t>(type)},
-                 now_ns);
+  return request(
+      {static_cast<std::uint8_t>(Service::EcuReset), static_cast<std::uint8_t>(type)},
+      now_ns);
 }
 
-Status Client::clear_diagnostic_information(std::uint32_t group,
-                                            std::uint64_t now_ns) {
+Status Client::clear_diagnostic_information(std::uint32_t group, std::uint64_t now_ns) {
   std::vector<std::uint8_t> payload = {
       static_cast<std::uint8_t>(Service::ClearDiagnosticInformation)};
   push_be(payload, group, 3);
@@ -420,23 +429,19 @@ Status Client::write_data_by_identifier(std::uint16_t did,
   return request(std::move(payload), now_ns);
 }
 
-Status Client::security_access_request_seed(std::uint8_t level,
-                                            std::uint64_t now_ns) {
+Status Client::security_access_request_seed(std::uint8_t level, std::uint64_t now_ns) {
   // Odd sub-functions request a seed, even ones send the key.
   if ((level & 0x01u) == 0u) {
-    return Error(ErrorCode::InvalidArgument,
-                 "a requestSeed sub-function must be odd");
+    return Error(ErrorCode::InvalidArgument, "a requestSeed sub-function must be odd");
   }
-  return request({static_cast<std::uint8_t>(Service::SecurityAccess), level},
-                 now_ns);
+  return request({static_cast<std::uint8_t>(Service::SecurityAccess), level}, now_ns);
 }
 
 Status Client::security_access_send_key(std::uint8_t level,
                                         const std::vector<std::uint8_t>& key,
                                         std::uint64_t now_ns) {
   if ((level & 0x01u) != 0u) {
-    return Error(ErrorCode::InvalidArgument,
-                 "a sendKey sub-function must be even");
+    return Error(ErrorCode::InvalidArgument, "a sendKey sub-function must be even");
   }
   std::vector<std::uint8_t> payload = {
       static_cast<std::uint8_t>(Service::SecurityAccess), level};
@@ -456,10 +461,9 @@ Status Client::routine_control(RoutineControlType type, std::uint16_t routine,
 }
 
 Status Client::request_download(std::uint32_t address, std::uint32_t size,
-                                std::uint8_t address_bytes,
-                                std::uint8_t size_bytes, std::uint64_t now_ns) {
-  if (address_bytes == 0 || address_bytes > 4 || size_bytes == 0 ||
-      size_bytes > 4) {
+                                std::uint8_t address_bytes, std::uint8_t size_bytes,
+                                std::uint64_t now_ns) {
+  if (address_bytes == 0 || address_bytes > 4 || size_bytes == 0 || size_bytes > 4) {
     return Error(ErrorCode::InvalidArgument,
                  "address and size must each be one to four bytes");
   }
@@ -475,8 +479,8 @@ Status Client::request_download(std::uint32_t address, std::uint32_t size,
 Status Client::transfer_data(std::uint8_t block_counter,
                              const std::vector<std::uint8_t>& data,
                              std::uint64_t now_ns) {
-  std::vector<std::uint8_t> payload = {
-      static_cast<std::uint8_t>(Service::TransferData), block_counter};
+  std::vector<std::uint8_t> payload = {static_cast<std::uint8_t>(Service::TransferData),
+                                       block_counter};
   payload.insert(payload.end(), data.begin(), data.end());
   return request(std::move(payload), now_ns);
 }
@@ -486,8 +490,8 @@ Status Client::request_transfer_exit(std::uint64_t now_ns) {
 }
 
 Status Client::tester_present(std::uint64_t now_ns, bool suppress_response) {
-  const auto sub = static_cast<std::uint8_t>(
-      suppress_response ? kSuppressPositiveResponse : 0x00u);
+  const auto sub =
+      static_cast<std::uint8_t>(suppress_response ? kSuppressPositiveResponse : 0x00u);
   return request({static_cast<std::uint8_t>(Service::TesterPresent), sub}, now_ns);
 }
 

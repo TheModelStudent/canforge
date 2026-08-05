@@ -14,12 +14,12 @@
 // Reproducibility: the seed is printed at startup and can be supplied with
 // CANFORGE_FUZZ_SEED, so a crash is replayable.
 
+#include <csignal>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <csignal>
 #include <random>
 #include <string>
 #include <vector>
@@ -42,7 +42,7 @@ std::vector<std::uint8_t> read_file(const std::string& path) {
 
 bool is_directory(const std::string& path) {
 #if defined(__unix__)
-  struct stat info {};
+  struct stat info{};
   return ::stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
 #else
   return false;
@@ -103,14 +103,16 @@ void mutate(std::vector<std::uint8_t>& data, std::mt19937_64& rng) {
       break;
     case 4: {  // duplicate a run, which is how you grow a structure
       const std::size_t from = position(rng);
-      const std::size_t len = std::min<std::size_t>(data.size() - from, 1u + rng() % 32u);
+      const std::size_t len =
+          std::min<std::size_t>(data.size() - from, 1u + rng() % 32u);
       data.insert(data.end(), data.begin() + static_cast<std::ptrdiff_t>(from),
                   data.begin() + static_cast<std::ptrdiff_t>(from + len));
       break;
     }
     case 5: {  // splice out a run
       const std::size_t from = position(rng);
-      const std::size_t len = std::min<std::size_t>(data.size() - from, 1u + rng() % 32u);
+      const std::size_t len =
+          std::min<std::size_t>(data.size() - from, 1u + rng() % 32u);
       data.erase(data.begin() + static_cast<std::ptrdiff_t>(from),
                  data.begin() + static_cast<std::ptrdiff_t>(from + len));
       break;
@@ -161,8 +163,7 @@ int main(int argc, char** argv) {
     return 2;
   }
   const std::string path = argv[1];
-  const std::uint64_t iterations =
-      argc > 2 ? std::strtoull(argv[2], nullptr, 10) : 0;
+  const std::uint64_t iterations = argc > 2 ? std::strtoull(argv[2], nullptr, 10) : 0;
 
   std::vector<std::vector<std::uint8_t>> corpus = load_corpus(path);
   if (corpus.empty()) {
@@ -181,8 +182,8 @@ int main(int argc, char** argv) {
   }
 
   const char* seed_env = std::getenv("CANFORGE_FUZZ_SEED");
-  const std::uint64_t seed =
-      seed_env != nullptr ? std::strtoull(seed_env, nullptr, 10) : 0x9E3779B97F4A7C15ULL;
+  const std::uint64_t seed = seed_env != nullptr ? std::strtoull(seed_env, nullptr, 10)
+                                                 : 0x9E3779B97F4A7C15ULL;
   std::fprintf(stderr, "%s: %llu iterations, seed %llu, %zu corpus entries\n", argv[0],
                static_cast<unsigned long long>(iterations),
                static_cast<unsigned long long>(seed), corpus.size());
@@ -190,7 +191,8 @@ int main(int argc, char** argv) {
   std::signal(SIGABRT, on_fatal);
   std::signal(SIGSEGV, on_fatal);
   std::signal(SIGBUS, on_fatal);
-  g_crash_prefix = std::string(argv[0]).substr(std::string(argv[0]).find_last_of('/') + 1);
+  g_crash_prefix =
+      std::string(argv[0]).substr(std::string(argv[0]).find_last_of('/') + 1);
 
   std::mt19937_64 rng(seed);
   std::vector<std::uint8_t> buffer;

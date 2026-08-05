@@ -5,7 +5,9 @@
 
 namespace canforge::sim {
 
-void FaultInjector::add(Fault fault) { faults_.push_back(std::move(fault)); }
+void FaultInjector::add(Fault fault) {
+  faults_.push_back(std::move(fault));
+}
 
 const Fault* FaultInjector::find(std::string_view name) const noexcept {
   for (const Fault& f : faults_) {
@@ -143,8 +145,8 @@ std::vector<ScheduledFrame> FaultInjector::process(std::string_view node,
         if (dist(rng_) < f.probability && working.size() > 0) {
           std::uniform_int_distribution<std::size_t> which(0, working.size() * 8u - 1u);
           const std::size_t bit = which(rng_);
-          working.data()[bit / 8u] = static_cast<std::uint8_t>(
-              working.data()[bit / 8u] ^ (1u << (bit % 8u)));
+          working.data()[bit / 8u] =
+              static_cast<std::uint8_t>(working.data()[bit / 8u] ^ (1u << (bit % 8u)));
           ++corrupted_;
         }
         break;

@@ -77,8 +77,8 @@ TEST(Faults, DropIsSeededAndProportional) {
   ASSERT_TRUE(sim->faults().set_active("dropsome", true));
   const std::size_t with_drops = count_frames(*sim, wheels, 10 * kS);
   EXPECT_LT(with_drops, baseline);
-  EXPECT_NEAR(static_cast<double>(with_drops) / static_cast<double>(baseline),
-              0.95, 0.04)
+  EXPECT_NEAR(static_cast<double>(with_drops) / static_cast<double>(baseline), 0.95,
+              0.04)
       << "the config drops 5%";
 
   // Same seed, same result.

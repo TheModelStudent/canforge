@@ -8,16 +8,16 @@
 // The kernel headers are C, and their macros use C casts that -Wold-style-cast
 // would reject. They are included as system headers so the project's warning
 // set does not apply to them.
-#include <errno.h>       // NOLINT
-#include <linux/can.h>   // NOLINT
+#include <errno.h>            // NOLINT
+#include <linux/can.h>        // NOLINT
 #include <linux/can/error.h>  // NOLINT
 #include <linux/can/raw.h>    // NOLINT
-#include <net/if.h>      // NOLINT
-#include <poll.h>        // NOLINT
-#include <sys/ioctl.h>   // NOLINT
-#include <sys/socket.h>  // NOLINT
-#include <sys/types.h>   // NOLINT
-#include <unistd.h>      // NOLINT
+#include <net/if.h>           // NOLINT
+#include <poll.h>             // NOLINT
+#include <sys/ioctl.h>        // NOLINT
+#include <sys/socket.h>       // NOLINT
+#include <sys/types.h>        // NOLINT
+#include <unistd.h>           // NOLINT
 
 #ifndef SO_TIMESTAMPING
 #define SO_TIMESTAMPING 37
@@ -35,13 +35,17 @@ namespace canforge::transport {
 SocketCanBus::SocketCanBus(std::string interface_name, SocketCanOptions options)
     : interface_(std::move(interface_name)), options_(options) {}
 
-SocketCanBus::~SocketCanBus() { close(); }
+SocketCanBus::~SocketCanBus() {
+  close();
+}
 
 #ifndef __linux__
 
 // Portable stub. Everything compiles; nothing opens.
 
-bool SocketCanBus::interface_exists(const std::string&) noexcept { return false; }
+bool SocketCanBus::interface_exists(const std::string&) noexcept {
+  return false;
+}
 
 Status SocketCanBus::open() {
   return core::Error(core::ErrorCode::TransportUnsupported,
@@ -60,15 +64,16 @@ Status SocketCanBus::set_filters(const std::vector<Filter>& filters) {
   filters_ = filters;
   return core::ok();
 }
-Status SocketCanBus::apply_filters() { return core::ok(); }
+Status SocketCanBus::apply_filters() {
+  return core::ok();
+}
 
 #else  // __linux__
 
 namespace {
 
 core::Error errno_error(core::ErrorCode code, std::string_view message) {
-  return core::Error(code, message,
-                     {static_cast<std::uint32_t>(errno), 0});
+  return core::Error(code, message, {static_cast<std::uint32_t>(errno), 0});
 }
 
 /// SocketCAN packs RTR and ERR into the identifier word alongside EFF.

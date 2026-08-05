@@ -20,9 +20,9 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
   // The first two bytes steer the configuration, so the fuzzer explores
   // extended addressing and different block sizes, not one shape.
   if ((data[0] & 0x01u) != 0u) {
-    config.address = isotp::Address::extended(core::CanId::standard(0x7E8).value(),
-                                              core::CanId::standard(0x7E0).value(),
-                                              0x10, data[1]);
+    config.address =
+        isotp::Address::extended(core::CanId::standard(0x7E8).value(),
+                                 core::CanId::standard(0x7E0).value(), 0x10, data[1]);
   }
   config.block_size = data[0] >> 1u;
   config.max_receive_length = 100000;

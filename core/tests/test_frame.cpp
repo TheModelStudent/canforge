@@ -94,7 +94,7 @@ TEST(Dlc, ClassicMapping) {
 }
 
 TEST(Dlc, FdMapping) {
-  const std::array<std::uint8_t, 16> expected = {0,  1,  2,  3,  4,  5,  6,  7,
+  const std::array<std::uint8_t, 16> expected = {0, 1,  2,  3,  4,  5,  6,  7,
                                                  8, 12, 16, 20, 24, 32, 48, 64};
   for (std::uint8_t dlc = 0; dlc < 16u; ++dlc) {
     EXPECT_EQ(dlc_to_length(dlc, true), expected[dlc]) << "dlc " << int{dlc};

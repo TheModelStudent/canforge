@@ -29,9 +29,9 @@ enum class FaultKind : std::uint8_t {
 
 struct Fault {
   FaultKind kind = FaultKind::DropFrames;
-  std::string name;      ///< Unique handle used to toggle it.
-  std::string node;      ///< Empty means every node.
-  core::CanId id;        ///< For message- and signal-scoped faults.
+  std::string name;  ///< Unique handle used to toggle it.
+  std::string node;  ///< Empty means every node.
+  core::CanId id;    ///< For message- and signal-scoped faults.
   bool has_id = false;
   std::string signal;
   double value = 0.0;        ///< OutOfRange target.
@@ -62,8 +62,7 @@ class FaultInjector {
 
   /// Run one frame through the active faults. Returns the frames that should
   /// actually be transmitted -- empty when the frame was dropped.
-  std::vector<ScheduledFrame> process(std::string_view node,
-                                      const core::Frame& frame,
+  std::vector<ScheduledFrame> process(std::string_view node, const core::Frame& frame,
                                       std::uint64_t now_ns,
                                       const core::Database& database);
 

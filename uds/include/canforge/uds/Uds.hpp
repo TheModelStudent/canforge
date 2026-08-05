@@ -88,9 +88,9 @@ enum class DtcStatusBit : std::uint8_t {
 };
 
 struct Dtc {
-  std::uint32_t code = 0;    ///< Three bytes, as sent on the wire.
+  std::uint32_t code = 0;  ///< Three bytes, as sent on the wire.
   std::uint8_t status = 0;
-  std::string text;          ///< Optional human label, not part of the protocol.
+  std::string text;  ///< Optional human label, not part of the protocol.
 };
 
 /// Format a three-byte DTC the way a scan tool shows it, e.g. P0301.
@@ -174,9 +174,9 @@ enum class RequestState : std::uint8_t {
 struct Response {
   bool positive = false;
   std::uint8_t service = 0;
-  std::uint8_t nrc = 0;           ///< Zero when positive.
-  std::vector<std::uint8_t> data;  ///< Payload after the service identifier.
-  std::uint32_t pending_count = 0; ///< How many 0x78 responses were absorbed.
+  std::uint8_t nrc = 0;             ///< Zero when positive.
+  std::vector<std::uint8_t> data;   ///< Payload after the service identifier.
+  std::uint32_t pending_count = 0;  ///< How many 0x78 responses were absorbed.
 };
 
 /// One request/response exchange, driven the same way as an ISO-TP session:
@@ -210,8 +210,7 @@ class Client {
                           std::uint8_t address_bytes, std::uint8_t size_bytes,
                           std::uint64_t now_ns);
   Status transfer_data(std::uint8_t block_counter,
-                       const std::vector<std::uint8_t>& data,
-                       std::uint64_t now_ns);
+                       const std::vector<std::uint8_t>& data, std::uint64_t now_ns);
   Status request_transfer_exit(std::uint64_t now_ns);
   Status tester_present(std::uint64_t now_ns, bool suppress_response = true);
 
@@ -241,8 +240,7 @@ class Client {
   void begin_transfer(std::uint64_t now_ns);
   void finish(Response response);
   void fail(core::Error error);
-  void handle_message(const std::vector<std::uint8_t>& message,
-                      std::uint64_t now_ns);
+  void handle_message(const std::vector<std::uint8_t>& message, std::uint64_t now_ns);
 
   ClientConfig config_;
   isotp::Sender sender_;

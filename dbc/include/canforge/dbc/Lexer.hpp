@@ -11,9 +11,9 @@
 namespace canforge::dbc {
 using text::Lexer;
 using text::Source;
+using text::to_string;
 using text::Token;
 using text::TokenKind;
-using text::to_string;
 }  // namespace canforge::dbc
 
 #endif  // CANFORGE_DBC_LEXER_HPP

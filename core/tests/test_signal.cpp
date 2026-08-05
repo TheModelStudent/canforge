@@ -37,11 +37,11 @@ TEST(SignExtend, EveryWidth) {
     EXPECT_EQ(sign_extend(bit_mask(len), len), -1) << "len " << unsigned{len};
     EXPECT_EQ(sign_extend(0, len), 0);
     // The sign bit alone is the most negative value.
-    const std::uint64_t sign_only = len >= 64u ? (std::uint64_t{1} << 63u)
-                                               : (std::uint64_t{1} << (len - 1u));
-    const std::int64_t expect_min =
-        len >= 64u ? std::numeric_limits<std::int64_t>::min()
-                   : -(std::int64_t{1} << (len - 1u));
+    const std::uint64_t sign_only =
+        len >= 64u ? (std::uint64_t{1} << 63u) : (std::uint64_t{1} << (len - 1u));
+    const std::int64_t expect_min = len >= 64u
+                                        ? std::numeric_limits<std::int64_t>::min()
+                                        : -(std::int64_t{1} << (len - 1u));
     EXPECT_EQ(sign_extend(sign_only, len), expect_min) << "len " << unsigned{len};
   }
 }

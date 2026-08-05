@@ -20,8 +20,12 @@ namespace {
 
 constexpr std::uint64_t kMs = 1000000ULL;
 
-core::CanId tester_tx() { return core::CanId::standard(0x7E0).value(); }
-core::CanId ecu_tx() { return core::CanId::standard(0x7E8).value(); }
+core::CanId tester_tx() {
+  return core::CanId::standard(0x7E0).value();
+}
+core::CanId ecu_tx() {
+  return core::CanId::standard(0x7E8).value();
+}
 
 isotp::Config client_transport() {
   isotp::Config c;
@@ -49,8 +53,9 @@ struct Bench {
   sim::UdsServer server;
   std::uint64_t now = 0;
 
-  Bench() : client(client_config()),
-            server(sim::default_server_config(server_transport())) {}
+  Bench()
+      : client(client_config()),
+        server(sim::default_server_config(server_transport())) {}
 
   explicit Bench(sim::UdsServerConfig server_config)
       : client(client_config()), server(std::move(server_config)) {}
@@ -91,8 +96,8 @@ struct Bench {
 
   /// Unlock the ECU, which every programming operation needs first.
   void unlock(std::uint32_t secret = 0xA5C3F00Du) {
-    ASSERT_TRUE(client.diagnostic_session_control(SessionType::Programming, now)
-                    .has_value());
+    ASSERT_TRUE(
+        client.diagnostic_session_control(SessionType::Programming, now).has_value());
     expect_positive();
     ASSERT_TRUE(client.security_access_request_seed(0x01, now).has_value());
     const Response seed_response = expect_positive();
@@ -114,18 +119,29 @@ struct Bench {
 };
 
 TEST(Nrc, EveryDefinedCodeHasAName) {
-  const Nrc codes[] = {
-      Nrc::GeneralReject, Nrc::ServiceNotSupported, Nrc::SubFunctionNotSupported,
-      Nrc::IncorrectMessageLengthOrInvalidFormat, Nrc::ResponseTooLong,
-      Nrc::BusyRepeatRequest, Nrc::ConditionsNotCorrect, Nrc::RequestSequenceError,
-      Nrc::RequestOutOfRange, Nrc::SecurityAccessDenied, Nrc::InvalidKey,
-      Nrc::ExceedNumberOfAttempts, Nrc::RequiredTimeDelayNotExpired,
-      Nrc::UploadDownloadNotAccepted, Nrc::TransferDataSuspended,
-      Nrc::GeneralProgrammingFailure, Nrc::WrongBlockSequenceCounter,
-      Nrc::RequestCorrectlyReceivedResponsePending,
-      Nrc::SubFunctionNotSupportedInActiveSession,
-      Nrc::ServiceNotSupportedInActiveSession, Nrc::VoltageTooHigh,
-      Nrc::VoltageTooLow, Nrc::ShifterLeverNotInPark};
+  const Nrc codes[] = {Nrc::GeneralReject,
+                       Nrc::ServiceNotSupported,
+                       Nrc::SubFunctionNotSupported,
+                       Nrc::IncorrectMessageLengthOrInvalidFormat,
+                       Nrc::ResponseTooLong,
+                       Nrc::BusyRepeatRequest,
+                       Nrc::ConditionsNotCorrect,
+                       Nrc::RequestSequenceError,
+                       Nrc::RequestOutOfRange,
+                       Nrc::SecurityAccessDenied,
+                       Nrc::InvalidKey,
+                       Nrc::ExceedNumberOfAttempts,
+                       Nrc::RequiredTimeDelayNotExpired,
+                       Nrc::UploadDownloadNotAccepted,
+                       Nrc::TransferDataSuspended,
+                       Nrc::GeneralProgrammingFailure,
+                       Nrc::WrongBlockSequenceCounter,
+                       Nrc::RequestCorrectlyReceivedResponsePending,
+                       Nrc::SubFunctionNotSupportedInActiveSession,
+                       Nrc::ServiceNotSupportedInActiveSession,
+                       Nrc::VoltageTooHigh,
+                       Nrc::VoltageTooLow,
+                       Nrc::ShifterLeverNotInPark};
   for (const Nrc code : codes) {
     EXPECT_STRNE(to_string(code), "unknown")
         << "0x" << std::hex << int{static_cast<std::uint8_t>(code)};
@@ -157,10 +173,10 @@ TEST(Service, Names) {
 
 TEST(Client, DiagnosticSessionControl) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .diagnostic_session_control(SessionType::ExtendedDiagnostic,
-                                              bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .diagnostic_session_control(SessionType::ExtendedDiagnostic, bench.now)
+          .has_value());
   const Response r = bench.expect_positive();
   ASSERT_GE(r.data.size(), 1u);
   EXPECT_EQ(r.data[0], static_cast<std::uint8_t>(SessionType::ExtendedDiagnostic));
@@ -202,8 +218,7 @@ TEST(Client, ReadUnknownIdentifier) {
 
 TEST(Client, WriteDataByIdentifier) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .write_data_by_identifier(0x0100, {0xAB, 0xCD}, bench.now)
+  ASSERT_TRUE(bench.client.write_data_by_identifier(0x0100, {0xAB, 0xCD}, bench.now)
                   .has_value());
   bench.expect_positive();
 
@@ -216,17 +231,17 @@ TEST(Client, WriteDataByIdentifier) {
 
 TEST(Client, IdentificationDataIsReadOnly) {
   Bench bench;
-  ASSERT_TRUE(bench.client.write_data_by_identifier(0xF190, {0x00}, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.write_data_by_identifier(0xF190, {0x00}, bench.now).has_value());
   bench.expect_negative(Nrc::SecurityAccessDenied);
 }
 
 TEST(Client, ReadDtcInformation) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .read_dtc_information(DtcReportType::ReportDtcByStatusMask,
-                                        0xFF, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .read_dtc_information(DtcReportType::ReportDtcByStatusMask, 0xFF, bench.now)
+          .has_value());
   const Response r = bench.expect_positive();
   const std::vector<Dtc> dtcs = Client::parse_dtc_list(r.data);
   ASSERT_EQ(dtcs.size(), 3u);
@@ -241,8 +256,8 @@ TEST(Client, ReadDtcByStatusMaskFiltersProperly) {
   Bench bench;
   const auto pending = static_cast<std::uint8_t>(DtcStatusBit::PendingDtc);
   ASSERT_TRUE(bench.client
-                  .read_dtc_information(DtcReportType::ReportDtcByStatusMask,
-                                        pending, bench.now)
+                  .read_dtc_information(DtcReportType::ReportDtcByStatusMask, pending,
+                                        bench.now)
                   .has_value());
   const std::vector<Dtc> dtcs = Client::parse_dtc_list(bench.expect_positive().data);
   ASSERT_EQ(dtcs.size(), 1u);
@@ -252,24 +267,24 @@ TEST(Client, ReadDtcByStatusMaskFiltersProperly) {
 TEST(Client, ClearDiagnosticInformation) {
   Bench bench;
   EXPECT_EQ(bench.server.dtcs().size(), 3u);
-  ASSERT_TRUE(bench.client.clear_diagnostic_information(0xFFFFFF, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.clear_diagnostic_information(0xFFFFFF, bench.now).has_value());
   bench.expect_positive();
   EXPECT_TRUE(bench.server.dtcs().empty());
 
-  ASSERT_TRUE(bench.client
-                  .read_dtc_information(DtcReportType::ReportDtcByStatusMask,
-                                        0xFF, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .read_dtc_information(DtcReportType::ReportDtcByStatusMask, 0xFF, bench.now)
+          .has_value());
   EXPECT_TRUE(Client::parse_dtc_list(bench.expect_positive().data).empty());
 }
 
 TEST(Client, EcuResetDropsTheSession) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .diagnostic_session_control(SessionType::ExtendedDiagnostic,
-                                              bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .diagnostic_session_control(SessionType::ExtendedDiagnostic, bench.now)
+          .has_value());
   bench.expect_positive();
   ASSERT_EQ(bench.server.session(), SessionType::ExtendedDiagnostic);
 
@@ -306,8 +321,8 @@ TEST(Client, KeepaliveSendsTesterPresentInANonDefaultSession) {
   sim::UdsServer server(sim::default_server_config(server_transport()));
 
   std::uint64_t now = 0;
-  ASSERT_TRUE(client.diagnostic_session_control(SessionType::Programming, now)
-                  .has_value());
+  ASSERT_TRUE(
+      client.diagnostic_session_control(SessionType::Programming, now).has_value());
   for (int i = 0; i < 20000; ++i) {
     for (const core::FdFrame& f : client.poll(now)) {
       server.on_frame(f, now);
@@ -328,8 +343,7 @@ TEST(Client, KeepaliveSendsTesterPresentInANonDefaultSession) {
 
 TEST(Client, SecurityAccessIsRefusedInTheDefaultSession) {
   Bench bench;
-  ASSERT_TRUE(
-      bench.client.security_access_request_seed(0x01, bench.now).has_value());
+  ASSERT_TRUE(bench.client.security_access_request_seed(0x01, bench.now).has_value());
   bench.expect_negative(Nrc::ServiceNotSupportedInActiveSession);
 }
 
@@ -341,35 +355,32 @@ TEST(Client, SecurityAccessSeedAndKey) {
 
 TEST(Client, WrongKeyIsRejected) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .diagnostic_session_control(SessionType::Programming, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.diagnostic_session_control(SessionType::Programming, bench.now)
+          .has_value());
+  bench.expect_positive();
+  ASSERT_TRUE(bench.client.security_access_request_seed(0x01, bench.now).has_value());
   bench.expect_positive();
   ASSERT_TRUE(
-      bench.client.security_access_request_seed(0x01, bench.now).has_value());
-  bench.expect_positive();
-  ASSERT_TRUE(bench.client.security_access_send_key(0x02, {0, 0, 0, 0}, bench.now)
-                  .has_value());
+      bench.client.security_access_send_key(0x02, {0, 0, 0, 0}, bench.now).has_value());
   bench.expect_negative(Nrc::InvalidKey);
   EXPECT_FALSE(bench.server.unlocked());
 }
 
 TEST(Client, SeedAndKeySubFunctionParityIsChecked) {
   Bench bench;
-  EXPECT_FALSE(
-      bench.client.security_access_request_seed(0x02, bench.now).has_value())
+  EXPECT_FALSE(bench.client.security_access_request_seed(0x02, bench.now).has_value())
       << "requestSeed must be odd";
-  EXPECT_FALSE(
-      bench.client.security_access_send_key(0x01, {0}, bench.now).has_value())
+  EXPECT_FALSE(bench.client.security_access_send_key(0x01, {0}, bench.now).has_value())
       << "sendKey must be even";
 }
 
 TEST(Client, RoutineControlNeedsSecurity) {
   Bench bench;
-  ASSERT_TRUE(bench.client
-                  .routine_control(RoutineControlType::StartRoutine, 0xFF00, {},
-                                   bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .routine_control(RoutineControlType::StartRoutine, 0xFF00, {}, bench.now)
+          .has_value());
   bench.expect_negative(Nrc::SecurityAccessDenied);
 }
 
@@ -382,10 +393,10 @@ TEST(Client, ResponsePendingExtendsTheTimeout) {
   bench.unlock();
 
   const std::uint64_t started = bench.now;
-  ASSERT_TRUE(bench.client
-                  .routine_control(RoutineControlType::StartRoutine, 0xFF00, {},
-                                   bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .routine_control(RoutineControlType::StartRoutine, 0xFF00, {}, bench.now)
+          .has_value());
   const Response r = bench.expect_positive();
   EXPECT_GE(r.pending_count, 1u) << "at least one 0x78 should have been absorbed";
   EXPECT_GT(bench.now - started, 2900 * kMs)
@@ -426,17 +437,17 @@ TEST(Client, CompleteFirmwareDownload) {
   ASSERT_EQ(bench.server.session(), SessionType::Programming);
 
   // 2. Erase.
-  ASSERT_TRUE(bench.client
-                  .routine_control(RoutineControlType::StartRoutine, 0xFF00, {},
-                                   bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .routine_control(RoutineControlType::StartRoutine, 0xFF00, {}, bench.now)
+          .has_value());
   bench.expect_positive();
 
   // 3. RequestDownload announces where and how much.
   ASSERT_TRUE(bench.client
                   .request_download(0x08000000u,
-                                    static_cast<std::uint32_t>(firmware.size()),
-                                    4, 4, bench.now)
+                                    static_cast<std::uint32_t>(firmware.size()), 4, 4,
+                                    bench.now)
                   .has_value());
   const Response download = bench.expect_positive();
   ASSERT_GE(download.data.size(), 3u);
@@ -477,19 +488,19 @@ TEST(Client, CompleteFirmwareDownload) {
   }
 
   // 7. Verify through RoutineControl, as a real flow does.
-  ASSERT_TRUE(bench.client
-                  .routine_control(RoutineControlType::StartRoutine, 0xFF01, {},
-                                   bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client
+          .routine_control(RoutineControlType::StartRoutine, 0xFF01, {}, bench.now)
+          .has_value());
   const Response verify = bench.expect_positive();
   ASSERT_GE(verify.data.size(), 7u);
   std::uint32_t reported = 0;
   for (std::size_t i = 3; i < 7; ++i) {
     reported = (reported << 8u) | verify.data[i];
   }
-  const std::uint32_t expected = std::accumulate(
-      firmware.begin(), firmware.end(), std::uint32_t{0},
-      [](std::uint32_t acc, std::uint8_t b) { return acc + b; });
+  const std::uint32_t expected =
+      std::accumulate(firmware.begin(), firmware.end(), std::uint32_t{0},
+                      [](std::uint32_t acc, std::uint8_t b) { return acc + b; });
   EXPECT_EQ(reported, expected) << "the ECU's checksum must match the image";
 
   // 8. Back to the default session.
@@ -500,8 +511,8 @@ TEST(Client, CompleteFirmwareDownload) {
 
 TEST(Client, DownloadIsRefusedOutsideTheProgrammingSession) {
   Bench bench;
-  ASSERT_TRUE(bench.client.request_download(0x08000000u, 16, 4, 4, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.request_download(0x08000000u, 16, 4, 4, bench.now).has_value());
   bench.expect_negative(Nrc::ServiceNotSupportedInActiveSession);
 }
 
@@ -510,8 +521,8 @@ TEST(Client, DownloadOutOfRangeIsRefused) {
   config.flash_size = 1024;
   Bench bench(config);
   bench.unlock();
-  ASSERT_TRUE(bench.client.request_download(0x08000000u, 999999, 4, 4, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.request_download(0x08000000u, 999999, 4, 4, bench.now).has_value());
   bench.expect_negative(Nrc::RequestOutOfRange);
 }
 
@@ -525,8 +536,8 @@ TEST(Client, TransferDataBeforeRequestDownloadIsASequenceError) {
 TEST(Client, WrongBlockSequenceCounterIsCaught) {
   Bench bench;
   bench.unlock();
-  ASSERT_TRUE(bench.client.request_download(0x08000000u, 512, 4, 4, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.request_download(0x08000000u, 512, 4, 4, bench.now).has_value());
   bench.expect_positive();
   // Skipping straight to block 5 must be rejected.
   ASSERT_TRUE(bench.client.transfer_data(5, {1, 2, 3}, bench.now).has_value());
@@ -536,8 +547,8 @@ TEST(Client, WrongBlockSequenceCounterIsCaught) {
 TEST(Client, TransferExitBeforeTheImageIsCompleteFails) {
   Bench bench;
   bench.unlock();
-  ASSERT_TRUE(bench.client.request_download(0x08000000u, 512, 4, 4, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.request_download(0x08000000u, 512, 4, 4, bench.now).has_value());
   bench.expect_positive();
   ASSERT_TRUE(bench.client.transfer_data(1, {1, 2, 3}, bench.now).has_value());
   bench.expect_positive();
@@ -548,8 +559,8 @@ TEST(Client, TransferExitBeforeTheImageIsCompleteFails) {
 TEST(Client, RepeatingABlockIsIdempotent) {
   Bench bench;
   bench.unlock();
-  ASSERT_TRUE(bench.client.request_download(0x08000000u, 8, 4, 4, bench.now)
-                  .has_value());
+  ASSERT_TRUE(
+      bench.client.request_download(0x08000000u, 8, 4, 4, bench.now).has_value());
   bench.expect_positive();
   ASSERT_TRUE(bench.client.transfer_data(1, {1, 2, 3, 4}, bench.now).has_value());
   bench.expect_positive();

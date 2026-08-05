@@ -119,8 +119,7 @@ namespace detail {
 template <typename T, typename E = Error>
 class Result {
   static_assert(!std::is_reference_v<T>, "Result<T&> is not supported");
-  static_assert(!std::is_same_v<std::decay_t<T>, E>,
-                "Result<E, E> would be ambiguous");
+  static_assert(!std::is_same_v<std::decay_t<T>, E>, "Result<E, E> would be ambiguous");
 
  public:
   using value_type = T;
@@ -157,8 +156,7 @@ class Result {
     }
     return *this;
   }
-  Result& operator=(Result&& o) noexcept(
-      std::is_nothrow_move_constructible_v<T>) {
+  Result& operator=(Result&& o) noexcept(std::is_nothrow_move_constructible_v<T>) {
     if (this != &o) {
       destroy();
       engaged_ = o.engaged_;
@@ -204,8 +202,7 @@ class Result {
 
   template <typename U>
   T value_or(U&& fallback) const& {
-    return engaged_ ? storage_.value
-                    : static_cast<T>(std::forward<U>(fallback));
+    return engaged_ ? storage_.value : static_cast<T>(std::forward<U>(fallback));
   }
 
   template <typename F>
@@ -281,7 +278,9 @@ class Result<void, E> {
 
 using Status = Result<void, Error>;
 
-inline Status ok() noexcept { return Status{}; }
+inline Status ok() noexcept {
+  return Status{};
+}
 
 // Propagation helpers. Statement macros, not expressions, so they stay
 // portable: GNU statement-expressions would trip -Wpedantic.

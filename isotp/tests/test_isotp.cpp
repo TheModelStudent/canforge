@@ -21,8 +21,12 @@ namespace {
 constexpr std::uint64_t kUs = 1000ULL;
 constexpr std::uint64_t kMs = 1000000ULL;
 
-CanId tx_id() { return CanId::standard(0x7E0).value(); }
-CanId rx_id() { return CanId::standard(0x7E8).value(); }
+CanId tx_id() {
+  return CanId::standard(0x7E0).value();
+}
+CanId rx_id() {
+  return CanId::standard(0x7E8).value();
+}
 
 Config sender_config() {
   Config c;
@@ -191,10 +195,10 @@ TEST(IsoTp, FourThousandBytesArriveByteExact) {
 }
 
 TEST(IsoTp, EveryLengthUpToOneBlockRoundTrips) {
-  for (const std::size_t n : {std::size_t{8}, std::size_t{9}, std::size_t{13},
-                              std::size_t{14}, std::size_t{20}, std::size_t{62},
-                              std::size_t{63}, std::size_t{64}, std::size_t{100},
-                              std::size_t{255}, std::size_t{256}}) {
+  for (const std::size_t n :
+       {std::size_t{8}, std::size_t{9}, std::size_t{13}, std::size_t{14},
+        std::size_t{20}, std::size_t{62}, std::size_t{63}, std::size_t{64},
+        std::size_t{100}, std::size_t{255}, std::size_t{256}}) {
     Link link(sender_config(), receiver_config());
     const auto payload = pattern(n);
     ASSERT_TRUE(link.sender.begin(payload, 0).has_value());

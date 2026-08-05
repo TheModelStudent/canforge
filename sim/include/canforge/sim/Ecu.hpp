@@ -29,26 +29,26 @@ enum class TxMode : std::uint8_t {
 
 enum class ChecksumKind : std::uint8_t {
   None,
-  Xor8,    ///< XOR of every other byte. Common on older buses.
-  Crc8Sae, ///< SAE J1850: polynomial 0x1D, init 0xFF, final XOR 0xFF.
+  Xor8,     ///< XOR of every other byte. Common on older buses.
+  Crc8Sae,  ///< SAE J1850: polynomial 0x1D, init 0xFF, final XOR 0xFF.
 };
 
 /// One signal of one message, driven by exactly one of: a generator, a plant
 /// field, or (for counters and checksums) the framework itself.
 struct SignalBinding {
   std::string signal;
-  SourcePtr source;       ///< Null when `plant_field` is set.
+  SourcePtr source;  ///< Null when `plant_field` is set.
   std::string plant_field;
 };
 
 struct TxMessage {
   const core::Message* message = nullptr;
   std::uint64_t cycle_ns = 100000000ULL;
-  std::uint64_t jitter_ns = 0;   ///< Uniform +/- jitter on each transmission.
-  std::uint64_t phase_ns = 0;    ///< Initial offset, so nodes do not all fire at t=0.
+  std::uint64_t jitter_ns = 0;  ///< Uniform +/- jitter on each transmission.
+  std::uint64_t phase_ns = 0;   ///< Initial offset, so nodes do not all fire at t=0.
   TxMode mode = TxMode::Cyclic;
   std::vector<SignalBinding> bindings;
-  std::string counter_signal;    ///< Incremented modulo the signal's width.
+  std::string counter_signal;  ///< Incremented modulo the signal's width.
   std::string checksum_signal;
   ChecksumKind checksum = ChecksumKind::None;
 };

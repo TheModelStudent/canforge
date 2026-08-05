@@ -39,8 +39,8 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
     std::fwrite(data, 1, size, file);
   }
   std::fclose(file);
-  auto reader = canforge::transport::open_reader(path,
-                                                 canforge::transport::LogFormat::Asc);
+  auto reader =
+      canforge::transport::open_reader(path, canforge::transport::LogFormat::Asc);
   if (reader) {
     static_cast<void>(reader.value()->read_all());
   }

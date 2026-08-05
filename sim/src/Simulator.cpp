@@ -66,10 +66,9 @@ core::Result<std::unique_ptr<Simulator>> Simulator::build(SimConfig config,
   for (const Fault& fault : sim->config_.faults) {
     sim->faults_.add(fault);
   }
-  std::stable_sort(sim->config_.drive.begin(), sim->config_.drive.end(),
-                   [](const DriveEvent& a, const DriveEvent& b) {
-                     return a.at_ns < b.at_ns;
-                   });
+  std::stable_sort(
+      sim->config_.drive.begin(), sim->config_.drive.end(),
+      [](const DriveEvent& a, const DriveEvent& b) { return a.at_ns < b.at_ns; });
   return sim;
 }
 

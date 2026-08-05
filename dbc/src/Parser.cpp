@@ -124,12 +124,16 @@ class Parser {
 
   static bool is_top_level_keyword(std::string_view w) {
     static const std::string_view kWords[] = {
-        "VERSION",    "NS_",         "BS_",        "BU_",       "BO_",
-        "CM_",        "BA_DEF_",     "BA_DEF_DEF_", "BA_",      "VAL_",
-        "VAL_TABLE_", "SIG_VALTYPE_", "SG_MUL_VAL_", "BO_TX_BU_", "EV_",
-        "BA_DEF_REL_", "BA_REL_",    "BA_DEF_DEF_REL_", "SIG_GROUP_",
-        "SGTYPE_",    "ENVVAR_DATA_", "BU_SG_REL_", "BU_BO_REL_",
-        "BU_EV_REL_", "CAT_DEF_",    "CAT_",       "FILTER",    "SIG_TYPE_REF_"};
+        "VERSION",      "NS_",         "BS_",
+        "BU_",          "BO_",         "CM_",
+        "BA_DEF_",      "BA_DEF_DEF_", "BA_",
+        "VAL_",         "VAL_TABLE_",  "SIG_VALTYPE_",
+        "SG_MUL_VAL_",  "BO_TX_BU_",   "EV_",
+        "BA_DEF_REL_",  "BA_REL_",     "BA_DEF_DEF_REL_",
+        "SIG_GROUP_",   "SGTYPE_",     "ENVVAR_DATA_",
+        "BU_SG_REL_",   "BU_BO_REL_",  "BU_EV_REL_",
+        "CAT_DEF_",     "CAT_",        "FILTER",
+        "SIG_TYPE_REF_"};
     for (const std::string_view k : kWords) {
       if (w == k) {
         return true;
@@ -157,8 +161,7 @@ class Parser {
 
   bool parse_unsigned(std::uint64_t& out) {
     if (current().kind != TokenKind::Integer) {
-      error(ErrorCode::ParseBadNumber, current(),
-            "expected a non-negative integer");
+      error(ErrorCode::ParseBadNumber, current(), "expected a non-negative integer");
       return false;
     }
     out = advance().integer;
@@ -167,8 +170,7 @@ class Parser {
 
   bool parse_string(std::string& out) {
     if (current().kind != TokenKind::String) {
-      error(ErrorCode::ParseUnexpectedToken, current(),
-            "expected a quoted string");
+      error(ErrorCode::ParseUnexpectedToken, current(), "expected a quoted string");
       return false;
     }
     out = advance().value;
@@ -299,13 +301,14 @@ Database Parser::run() {
     } else if (t.is_word("SG_MUL_VAL_")) {
       parse_extended_multiplexing();
     } else if (t.is_word("EV_")) {
-      skip_unsupported_section("EV_", "environment variables are preserved by "
-                                      "neither canforge nor most CAN stacks");
+      skip_unsupported_section("EV_",
+                               "environment variables are preserved by "
+                               "neither canforge nor most CAN stacks");
     } else if (t.is_word("SIG_GROUP_") || t.is_word("SGTYPE_") ||
                t.is_word("ENVVAR_DATA_") || t.is_word("BU_SG_REL_") ||
                t.is_word("BU_BO_REL_") || t.is_word("BU_EV_REL_") ||
-               t.is_word("CAT_DEF_") || t.is_word("CAT_") ||
-               t.is_word("FILTER") || t.is_word("SIG_TYPE_REF_")) {
+               t.is_word("CAT_DEF_") || t.is_word("CAT_") || t.is_word("FILTER") ||
+               t.is_word("SIG_TYPE_REF_")) {
       skip_unsupported_section(t.text, "not required for encoding or decoding");
     } else if (t.is_word("SG_")) {
       error(ErrorCode::ParseSemantic, t,
@@ -340,8 +343,7 @@ void Parser::parse_new_symbols() {
   std::vector<std::string> symbols;
   while (current().kind == TokenKind::Identifier && !current().is_word("BS_")) {
     const Token& next = peek(1);
-    const bool entry_stands_alone =
-        next.first_on_line || next.kind == TokenKind::End;
+    const bool entry_stands_alone = next.first_on_line || next.kind == TokenKind::End;
     if (!entry_stands_alone) {
       break;
     }
@@ -397,8 +399,7 @@ void Parser::parse_value_table() {
     resynchronise();
     return;
   }
-  while (current().kind == TokenKind::Integer ||
-         current().kind == TokenKind::Minus) {
+  while (current().kind == TokenKind::Integer || current().kind == TokenKind::Minus) {
     double v = 0.0;
     if (!parse_number(v)) {
       break;
@@ -458,8 +459,7 @@ void Parser::parse_message() {
       transmitter.clear();
     }
   } else {
-    warn(ErrorCode::ParseSemantic, current(),
-         "message has no transmitting node",
+    warn(ErrorCode::ParseSemantic, current(), "message has no transmitting node",
          "the grammar requires one; Vector writes Vector__XXX when there is none");
   }
   message.set_transmitter(std::move(transmitter));
@@ -596,8 +596,9 @@ void Parser::parse_signal(Message& message) {
 
   if (layout.factor == 0.0) {
     warn(ErrorCode::CodecBadFactor, start_token,
-         "signal '" + name + "' has a scale factor of zero, which makes it "
-         "impossible to encode; substituting 1",
+         "signal '" + name +
+             "' has a scale factor of zero, which makes it "
+             "impossible to encode; substituting 1",
          "occasionally emitted by converters for constant signals");
     SignalLayout fixed = layout;
     fixed.factor = 1.0;
@@ -609,9 +610,8 @@ void Parser::parse_signal(Message& message) {
   // Database::validate() is what lets the diagnostic carry a line and column.
   if (!signal.layout().fits(message.dlc())) {
     error(ErrorCode::CodecSignalOutOfBounds, start_token,
-          "signal '" + name + "' extends past the end of message '" +
-              message.name() + "', which holds " +
-              std::to_string(message.dlc()) + " bytes");
+          "signal '" + name + "' extends past the end of message '" + message.name() +
+              "', which holds " + std::to_string(message.dlc()) + " bytes");
   }
 
   message.add_signal(std::move(signal));
@@ -732,8 +732,7 @@ void Parser::parse_comment() {
   match(TokenKind::Semicolon);
 }
 
-void Parser::skip_unsupported_section(std::string_view keyword,
-                                      std::string_view why) {
+void Parser::skip_unsupported_section(std::string_view keyword, std::string_view why) {
   const Token& t = current();
   warn(ErrorCode::Unsupported, t,
        "skipping unsupported section " + std::string(keyword),
@@ -816,8 +815,9 @@ void Parser::parse_attribute_definition(bool relation) {
 
   if (db_.find_attribute_definition(def.name) != nullptr) {
     warn(ErrorCode::ParseDuplicateDefinition, keyword,
-         "attribute '" + def.name + "' is defined more than once; the first "
-         "definition is kept");
+         "attribute '" + def.name +
+             "' is defined more than once; the first "
+             "definition is kept");
     return;
   }
   db_.add_attribute_definition(std::move(def));
@@ -827,12 +827,11 @@ AttributeValue Parser::parse_attribute_literal(const AttributeDefinition* def) {
   if (current().kind == TokenKind::String) {
     const std::string text = advance().value;
     if (def != nullptr && def->type == AttributeType::Enum) {
-      const auto it =
-          std::find(def->enum_values.begin(), def->enum_values.end(), text);
-      const auto index = it == def->enum_values.end()
-                             ? std::int64_t{-1}
-                             : static_cast<std::int64_t>(
-                                   std::distance(def->enum_values.begin(), it));
+      const auto it = std::find(def->enum_values.begin(), def->enum_values.end(), text);
+      const auto index =
+          it == def->enum_values.end()
+              ? std::int64_t{-1}
+              : static_cast<std::int64_t>(std::distance(def->enum_values.begin(), it));
       return AttributeValue::enumeration(index, text);
     }
     return AttributeValue::string(text);
@@ -918,8 +917,8 @@ void Parser::assign_attribute(const std::string& name, AttributeValue value,
       return;  // environment variables are not modelled
   }
   warn(ErrorCode::ParseUndefinedReference, where,
-       "attribute '" + name + "' is assigned to a " +
-           core::to_string(object) + " that is not defined");
+       "attribute '" + name + "' is assigned to a " + core::to_string(object) +
+           " that is not defined");
 }
 
 void Parser::parse_attribute_value(bool relation) {
@@ -1003,8 +1002,7 @@ void Parser::parse_value_descriptions() {
     return;
   }
   std::vector<ValueDescription> values;
-  while (current().kind == TokenKind::Integer ||
-         current().kind == TokenKind::Minus) {
+  while (current().kind == TokenKind::Integer || current().kind == TokenKind::Minus) {
     double v = 0.0;
     if (!parse_number(v)) {
       break;
@@ -1060,9 +1058,15 @@ void Parser::parse_signal_value_type() {
   }
   SignalLayout layout = s->layout();
   switch (kind) {
-    case 0: layout.value_type = ValueType::Integer; break;
-    case 1: layout.value_type = ValueType::Float32; break;
-    case 2: layout.value_type = ValueType::Float64; break;
+    case 0:
+      layout.value_type = ValueType::Integer;
+      break;
+    case 1:
+      layout.value_type = ValueType::Float32;
+      break;
+    case 2:
+      layout.value_type = ValueType::Float64;
+      break;
     default:
       error(ErrorCode::ParseSemantic, kind_token,
             "signal value type must be 0 (integer), 1 (float) or 2 (double)");
@@ -1150,8 +1154,7 @@ void Parser::parse_extended_multiplexing() {
 
 ParseResult parse_string(std::string_view text, std::string_view filename) {
   ParseResult result;
-  const Source source =
-      Source::normalise(std::string(text), std::string(filename));
+  const Source source = Source::normalise(std::string(text), std::string(filename));
   result.had_bom = source.had_bom();
   result.had_crlf = source.had_crlf();
   result.had_latin1 = source.had_latin1();
@@ -1183,8 +1186,7 @@ core::Result<core::Database> load(const std::string& path) {
         break;
       }
     }
-    return core::Error(first != nullptr ? first->code
-                                        : core::ErrorCode::ParseSemantic,
+    return core::Error(first != nullptr ? first->code : core::ErrorCode::ParseSemantic,
                        "the DBC file contains errors; see the diagnostics",
                        {first != nullptr ? first->where.line : 0,
                         first != nullptr ? first->where.column : 0});

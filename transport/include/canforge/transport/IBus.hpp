@@ -23,8 +23,8 @@ using core::Result;
 using core::Status;
 
 struct BusTiming {
-  std::uint32_t nominal_bitrate = 500000;   ///< Arbitration phase, bits/s.
-  std::uint32_t data_bitrate = 2000000;     ///< CAN FD data phase, bits/s.
+  std::uint32_t nominal_bitrate = 500000;  ///< Arbitration phase, bits/s.
+  std::uint32_t data_bitrate = 2000000;    ///< CAN FD data phase, bits/s.
 };
 
 struct FrameTiming {
@@ -33,9 +33,7 @@ struct FrameTiming {
   std::uint32_t stuff_bits = 0;        ///< Included in the two counts above.
   std::uint64_t nanoseconds = 0;
 
-  std::uint32_t total_bits() const noexcept {
-    return arbitration_bits + data_bits;
-  }
+  std::uint32_t total_bits() const noexcept { return arbitration_bits + data_bits; }
 };
 
 /// Worst-case time on the wire for a frame.
@@ -64,9 +62,9 @@ FrameTiming frame_timing(const FdFrame& frame, const BusTiming& timing) noexcept
 /// A SocketCAN-style acceptance filter: a frame passes when
 /// `(id & mask) == (filter & mask)`, optionally inverted.
 struct Filter {
-  std::uint32_t id = 0;    ///< Packed form, so bit 31 selects extended frames.
-  std::uint32_t mask = 0;  ///< Zero mask accepts everything.
-  bool invert = false;     ///< SocketCAN's CAN_INV_FILTER.
+  std::uint32_t id = 0;      ///< Packed form, so bit 31 selects extended frames.
+  std::uint32_t mask = 0;    ///< Zero mask accepts everything.
+  bool invert = false;       ///< SocketCAN's CAN_INV_FILTER.
   bool match_format = true;  ///< Compare the extended flag as well as the bits.
 
   static Filter exact(CanId wanted) noexcept {
@@ -84,8 +82,7 @@ struct Filter {
   }
 
   bool accepts(CanId candidate) const noexcept {
-    const std::uint32_t effective =
-        match_format ? mask : (mask & core::kExtendedIdMax);
+    const std::uint32_t effective = match_format ? mask : (mask & core::kExtendedIdMax);
     return ((candidate.packed() & effective) == (id & effective)) != invert;
   }
 };

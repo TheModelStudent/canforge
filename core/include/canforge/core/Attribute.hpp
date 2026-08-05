@@ -20,7 +20,7 @@ enum class AttributeObject : std::uint8_t {
 
 enum class AttributeType : std::uint8_t {
   Int = 0,
-  Hex,    ///< Same storage as Int; the difference is only how it is written.
+  Hex,  ///< Same storage as Int; the difference is only how it is written.
   Float,
   String,
   Enum,
@@ -89,8 +89,7 @@ struct AttributeDefinition {
   AttributeValue default_value;
   bool has_default = false;
 
-  friend bool operator==(const AttributeDefinition& a,
-                         const AttributeDefinition& b) {
+  friend bool operator==(const AttributeDefinition& a, const AttributeDefinition& b) {
     return a.name == b.name && a.object == b.object && a.type == b.type &&
            a.minimum == b.minimum && a.maximum == b.maximum &&
            a.enum_values == b.enum_values && a.has_default == b.has_default &&

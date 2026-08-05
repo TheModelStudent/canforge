@@ -59,8 +59,7 @@ std::uint16_t read_u16(const std::uint8_t* p) noexcept {
                                     (static_cast<std::uint16_t>(p[1]) << 8u));
 }
 std::uint32_t read_u32(const std::uint8_t* p) noexcept {
-  return static_cast<std::uint32_t>(p[0]) |
-         (static_cast<std::uint32_t>(p[1]) << 8u) |
+  return static_cast<std::uint32_t>(p[0]) | (static_cast<std::uint32_t>(p[1]) << 8u) |
          (static_cast<std::uint32_t>(p[2]) << 16u) |
          (static_cast<std::uint32_t>(p[3]) << 24u);
 }
@@ -97,8 +96,8 @@ std::uint64_t timestamp_ns(const ObjectHeader& h) noexcept {
 ///   channel u16, flags u8, dlc u8, id u32, data[8]
 /// CAN_MESSAGE2 adds frame length and bit count fields that canforge ignores.
 /// `flags` bit 0 is the transmit direction.
-core::Result<LogRecord> parse_can_message(const ObjectHeader& h,
-                                          const std::uint8_t* p, std::size_t n) {
+core::Result<LogRecord> parse_can_message(const ObjectHeader& h, const std::uint8_t* p,
+                                          std::size_t n) {
   if (n < 16) {
     return malformed("truncated CAN_MESSAGE object");
   }
@@ -173,8 +172,7 @@ core::Result<LogRecord> parse_can_fd_message(const ObjectHeader& h,
   if (24u + length > n) {
     return malformed("CAN FD payload runs past the end of the object");
   }
-  auto frame =
-      FdFrame::make(id.value(), p + 24, length, frame_flags, timestamp_ns(h));
+  auto frame = FdFrame::make(id.value(), p + 24, length, frame_flags, timestamp_ns(h));
   if (!frame) {
     return frame.error();
   }
@@ -248,8 +246,7 @@ class BlfReader final : public LogReader {
       return malformed("truncated object header");
     }
     if (std::memcmp(data + at, "LOBJ", 4) != 0) {
-      return malformed("missing the LOBJ signature",
-                       static_cast<std::uint32_t>(at));
+      return malformed("missing the LOBJ signature", static_cast<std::uint32_t>(at));
     }
     ObjectHeader h;
     h.header_size = read_u16(data + at + 4);
@@ -257,8 +254,7 @@ class BlfReader final : public LogReader {
     h.object_size = read_u32(data + at + 8);
     h.object_type = read_u32(data + at + 12);
     if (h.object_size < 16 || at + h.object_size > size) {
-      return malformed("object size runs past the end of the data",
-                       h.object_size);
+      return malformed("object size runs past the end of the data", h.object_size);
     }
     if (h.header_size >= 32 && at + 32 <= size) {
       h.flags = read_u32(data + at + 16);
@@ -286,8 +282,7 @@ class BlfReader final : public LogReader {
     const std::size_t next =
         cursor + ((h.object_size + 3u) & ~std::size_t{3});  // 4-byte aligned
     const std::uint8_t* payload = data + h.payload_offset;
-    const std::size_t payload_size =
-        cursor + h.object_size - h.payload_offset;
+    const std::size_t payload_size = cursor + h.object_size - h.payload_offset;
     cursor = next > size ? size : next;
 
     switch (h.object_type) {
@@ -367,8 +362,7 @@ class BlfReader final : public LogReader {
     if (method == 0) {
       inner_.assign(data + start, data + object_end);
     } else {
-      auto out = detail::inflate_zlib(data + start, compressed_size,
-                                      uncompressed_size);
+      auto out = detail::inflate_zlib(data + start, compressed_size, uncompressed_size);
       if (!out) {
         return out.error();
       }

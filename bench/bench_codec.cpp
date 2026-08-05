@@ -24,11 +24,11 @@ namespace {
 using canforge::core::ByteOrder;
 using canforge::core::CanId;
 using canforge::core::Frame;
-using canforge::core::Signedness;
 using canforge::core::SignalLayout;
+using canforge::core::Signedness;
 
-SignalLayout mk(std::uint16_t start, std::uint8_t len, ByteOrder order,
-                Signedness sign, double factor, double offset) {
+SignalLayout mk(std::uint16_t start, std::uint8_t len, ByteOrder order, Signedness sign,
+                double factor, double offset) {
   SignalLayout s;
   s.start_bit = start;
   s.bit_length = len;
@@ -67,14 +67,14 @@ Measurement measure(std::size_t operations, Body&& body) {
   const auto start = std::chrono::steady_clock::now();
   body();
   const auto end = std::chrono::steady_clock::now();
-  const double seconds =
-      std::chrono::duration<double>(end - start).count();
+  const double seconds = std::chrono::duration<double>(end - start).count();
   return {seconds, static_cast<double>(operations) / seconds};
 }
 
 void report(const char* label, const Measurement& m, std::size_t ops) {
   std::printf("  %-38s %10.2f M/s   (%zu ops in %.3f s, %.2f ns/op)\n", label,
-              m.per_second / 1e6, ops, m.seconds, m.seconds / static_cast<double>(ops) * 1e9);
+              m.per_second / 1e6, ops, m.seconds,
+              m.seconds / static_cast<double>(ops) * 1e9);
 }
 
 }  // namespace

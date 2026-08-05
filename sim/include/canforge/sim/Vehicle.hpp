@@ -25,14 +25,14 @@ namespace canforge::sim {
 struct VehicleParams {
   double mass_kg = 1500.0;
   double wheel_radius_m = 0.32;
-  double drag_area = 0.70;          ///< 0.5 * rho * Cd * A, in kg/m
+  double drag_area = 0.70;  ///< 0.5 * rho * Cd * A, in kg/m
   double rolling_resistance = 0.013;
   std::vector<double> gear_ratios = {3.5, 2.1, 1.4, 1.0, 0.8};
   double final_drive = 3.9;
   double idle_rpm = 800.0;
   double max_rpm = 6500.0;
   double peak_torque_nm = 250.0;
-  double engine_inertia = 0.25;     ///< kg m^2, engine plus flywheel
+  double engine_inertia = 0.25;  ///< kg m^2, engine plus flywheel
   double brake_torque_per_bar = 220.0;
   double ambient_temp_c = 20.0;
   double coolant_time_constant_s = 90.0;
@@ -46,7 +46,7 @@ struct VehicleState {
   double engine_torque_nm = 0.0;
   double coolant_temp_c = 20.0;
   double fuel_rate_lph = 0.0;
-  int gear = 1;                     ///< 0 is neutral
+  int gear = 1;  ///< 0 is neutral
   double throttle_pct = 0.0;
   double brake_bar = 0.0;
 };

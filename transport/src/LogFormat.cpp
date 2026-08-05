@@ -156,9 +156,11 @@ std::string to_hex(const std::uint8_t* data, std::size_t n, bool spaced) {
 
 const char* to_string(LogFormat f) noexcept {
   switch (f) {
+      // clang-format off
     case LogFormat::Candump: return "candump";
     case LogFormat::Asc:     return "asc";
     case LogFormat::Blf:     return "blf";
+      // clang-format on
   }
   return "unknown";
 }
@@ -365,8 +367,7 @@ class CandumpWriter final : public LogWriter {
 
   Status write(const LogRecord& record) override {
     out_ << format_candump_line(record) << '\n';
-    return out_ ? core::ok()
-                : Status(Error(ErrorCode::ParseIoError, "write failed"));
+    return out_ ? core::ok() : Status(Error(ErrorCode::ParseIoError, "write failed"));
   }
   Status finish() override {
     out_.flush();
@@ -502,8 +503,8 @@ class AscReader final : public LogReader {
       }
       payload[i] = static_cast<std::uint8_t>(byte);
     }
-    auto frame = core::FdFrame::make(id.value(), payload.data(), take,
-                                     FrameFlags::None, timestamp_ns);
+    auto frame = core::FdFrame::make(id.value(), payload.data(), take, FrameFlags::None,
+                                     timestamp_ns);
     if (!frame) {
       return frame.error();
     }
@@ -546,8 +547,8 @@ class AscReader final : public LogReader {
     if (parts[6] != "0") {
       flags |= FrameFlags::Esi;
     }
-    const auto length =
-        static_cast<std::size_t>(std::strtoul(std::string(parts[8]).c_str(), nullptr, 10));
+    const auto length = static_cast<std::size_t>(
+        std::strtoul(std::string(parts[8]).c_str(), nullptr, 10));
 
     std::array<std::uint8_t, 64> payload{};
     const std::size_t available = parts.size() > 9 ? parts.size() - 9 : 0;
@@ -609,8 +610,7 @@ class AscWriter final : public LogWriter {
          << "   d " << f.size() << ' ' << to_hex(f.data(), f.size(), true);
     }
     out_ << os.str() << '\n';
-    return out_ ? core::ok()
-                : Status(Error(ErrorCode::ParseIoError, "write failed"));
+    return out_ ? core::ok() : Status(Error(ErrorCode::ParseIoError, "write failed"));
   }
 
   Status finish() override {
@@ -634,9 +634,8 @@ Result<LogFormat> detect_format(const std::string& path) {
       return false;
     }
     std::string tail = path.substr(path.size() - suffix.size());
-    std::transform(tail.begin(), tail.end(), tail.begin(), [](unsigned char c) {
-      return static_cast<char>(std::tolower(c));
-    });
+    std::transform(tail.begin(), tail.end(), tail.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return tail == suffix;
   };
   if (ends_with(".blf")) {
@@ -667,8 +666,7 @@ Result<LogFormat> detect_format(const std::string& path) {
   if (!sniff.empty() && sniff.front() == '(') {
     return LogFormat::Candump;
   }
-  return Error(ErrorCode::LogBadFormat,
-               "cannot tell what log format this file is");
+  return Error(ErrorCode::LogBadFormat, "cannot tell what log format this file is");
 }
 
 Result<std::unique_ptr<LogReader>> open_reader(const std::string& path) {

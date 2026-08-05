@@ -83,6 +83,7 @@ std::string latin1_to_utf8(const std::string& in) {
 
 const char* to_string(TokenKind k) noexcept {
   switch (k) {
+      // clang-format off
     case TokenKind::End:        return "end of file";
     case TokenKind::Identifier: return "an identifier";
     case TokenKind::Integer:    return "an integer";
@@ -103,6 +104,7 @@ const char* to_string(TokenKind k) noexcept {
     case TokenKind::Dot:        return "'.'";
     case TokenKind::Slash:      return "'/'";
     case TokenKind::Unknown:    return "an unexpected character";
+      // clang-format on
   }
   return "something";
 }
@@ -178,7 +180,9 @@ char Lexer::peek(std::size_t ahead) const noexcept {
   return i < source_->text().size() ? source_->text()[i] : '\0';
 }
 
-bool Lexer::at_end() const noexcept { return pos_ >= source_->text().size(); }
+bool Lexer::at_end() const noexcept {
+  return pos_ >= source_->text().size();
+}
 
 char Lexer::advance() noexcept {
   const char c = source_->text()[pos_++];
@@ -389,23 +393,53 @@ std::vector<Token> Lexer::tokenise() {
       advance();
       TokenKind kind = TokenKind::Unknown;
       switch (c) {
-        case ':': kind = TokenKind::Colon;    break;
-        case ';': kind = TokenKind::Semicolon; break;
-        case ',': kind = TokenKind::Comma;    break;
-        case '|': kind = TokenKind::Pipe;     break;
-        case '@': kind = TokenKind::At;       break;
-        case '+': kind = TokenKind::Plus;     break;
-        case '-': kind = TokenKind::Minus;    break;
-        case '(': kind = TokenKind::LParen;   break;
-        case ')': kind = TokenKind::RParen;   break;
-        case '[': kind = TokenKind::LBracket; break;
-        case ']': kind = TokenKind::RBracket; break;
-        case '=': kind = TokenKind::Equals;   break;
-        case '.': kind = TokenKind::Dot;      break;
+        case ':':
+          kind = TokenKind::Colon;
+          break;
+        case ';':
+          kind = TokenKind::Semicolon;
+          break;
+        case ',':
+          kind = TokenKind::Comma;
+          break;
+        case '|':
+          kind = TokenKind::Pipe;
+          break;
+        case '@':
+          kind = TokenKind::At;
+          break;
+        case '+':
+          kind = TokenKind::Plus;
+          break;
+        case '-':
+          kind = TokenKind::Minus;
+          break;
+        case '(':
+          kind = TokenKind::LParen;
+          break;
+        case ')':
+          kind = TokenKind::RParen;
+          break;
+        case '[':
+          kind = TokenKind::LBracket;
+          break;
+        case ']':
+          kind = TokenKind::RBracket;
+          break;
+        case '=':
+          kind = TokenKind::Equals;
+          break;
+        case '.':
+          kind = TokenKind::Dot;
+          break;
         // A lone '/' is a path separator in a simulator config. Two of them
         // were already consumed as a comment by skip_trivia.
-        case '/': kind = TokenKind::Slash;    break;
-        default:  kind = TokenKind::Unknown;  break;
+        case '/':
+          kind = TokenKind::Slash;
+          break;
+        default:
+          kind = TokenKind::Unknown;
+          break;
       }
       t.kind = kind;
       t.text = std::string_view{source_->text()}.substr(begin, pos_ - begin);

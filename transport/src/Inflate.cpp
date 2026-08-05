@@ -46,8 +46,7 @@ class Huffman {
     std::array<std::uint16_t, kMaxBits + 1> offsets{};
     offsets[1] = 0;
     for (std::size_t bits = 1; bits < kMaxBits; ++bits) {
-      offsets[bits + 1] =
-          static_cast<std::uint16_t>(offsets[bits] + h.counts_[bits]);
+      offsets[bits + 1] = static_cast<std::uint16_t>(offsets[bits] + h.counts_[bits]);
     }
     h.symbols_.assign(count, 0);
     for (std::size_t i = 0; i < count; ++i) {
@@ -154,15 +153,15 @@ class BitReader {
 };
 
 // RFC 1951 section 3.2.5.
-constexpr std::uint16_t kLengthBase[29] = {3,  4,  5,  6,  7,  8,  9,  10, 11, 13,
-                                           15, 17, 19, 23, 27, 31, 35, 43, 51, 59,
+constexpr std::uint16_t kLengthBase[29] = {3,  4,  5,  6,   7,   8,   9,   10,  11, 13,
+                                           15, 17, 19, 23,  27,  31,  35,  43,  51, 59,
                                            67, 83, 99, 115, 131, 163, 195, 227, 258};
 constexpr std::uint8_t kLengthExtra[29] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2,
                                            2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0};
 constexpr std::uint16_t kDistanceBase[30] = {
-    1,    2,    3,    4,    5,    7,     9,     13,    17,  25,
-    33,   49,   65,   97,   129,  193,   257,   385,   513, 769,
-    1025, 1537, 2049, 3073, 4097, 6145,  8193,  12289, 16385, 24577};
+    1,    2,    3,    4,    5,    7,    9,    13,    17,    25,
+    33,   49,   65,   97,   129,  193,  257,  385,   513,   769,
+    1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577};
 constexpr std::uint8_t kDistanceExtra[30] = {0, 0, 0,  0,  1,  1,  2,  2,  3,  3,
                                              4, 4, 5,  5,  6,  6,  7,  7,  8,  8,
                                              9, 9, 10, 10, 11, 11, 12, 12, 13, 13};
@@ -342,8 +341,7 @@ Result<std::vector<std::uint8_t>> inflate_raw(const std::uint8_t* data,
       if (index >= 29) {
         return bad("length code out of range");
       }
-      const std::size_t length =
-          kLengthBase[index] + in.bits(kLengthExtra[index]);
+      const std::size_t length = kLengthBase[index] + in.bits(kLengthExtra[index]);
 
       const int dist_symbol = in.decode(distances);
       if (dist_symbol < 0 || dist_symbol >= 30) {

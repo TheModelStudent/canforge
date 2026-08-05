@@ -52,13 +52,9 @@ class CanId {
   /// Rebuild from the packed SocketCAN-style word. Transport code only.
   static Result<CanId> from_packed(std::uint32_t packed) noexcept;
 
-  constexpr std::uint32_t value() const noexcept {
-    return packed_ & kExtendedIdMax;
-  }
+  constexpr std::uint32_t value() const noexcept { return packed_ & kExtendedIdMax; }
   constexpr std::uint32_t packed() const noexcept { return packed_; }
-  constexpr bool is_extended() const noexcept {
-    return (packed_ & kEffFlag) != 0u;
-  }
+  constexpr bool is_extended() const noexcept { return (packed_ & kEffFlag) != 0u; }
   constexpr std::uint8_t bit_count() const noexcept {
     return is_extended() ? std::uint8_t{29} : std::uint8_t{11};
   }
@@ -79,16 +75,13 @@ class CanId {
     const std::uint32_t ide = is_extended() ? 1u : 0u;
     const std::uint32_t ext = is_extended() ? (value() & 0x3FFFFu) : 0u;
     return (static_cast<std::uint64_t>(base) << 19) |
-           (static_cast<std::uint64_t>(ide) << 18) |
-           static_cast<std::uint64_t>(ext);
+           (static_cast<std::uint64_t>(ide) << 18) | static_cast<std::uint64_t>(ext);
   }
 
   friend constexpr bool operator==(CanId a, CanId b) noexcept {
     return a.packed_ == b.packed_;
   }
-  friend constexpr bool operator!=(CanId a, CanId b) noexcept {
-    return !(a == b);
-  }
+  friend constexpr bool operator!=(CanId a, CanId b) noexcept { return !(a == b); }
   /// Arbitration order, not numeric order.
   friend constexpr bool operator<(CanId a, CanId b) noexcept {
     return a.arbitration_key() < b.arbitration_key();
@@ -173,29 +166,26 @@ class BasicFrame {
 
   constexpr BasicFrame() noexcept = default;
 
-  static Result<BasicFrame> make(CanId id, const std::uint8_t* bytes,
-                                 std::size_t len,
+  static Result<BasicFrame> make(CanId id, const std::uint8_t* bytes, std::size_t len,
                                  FrameFlags flags = FrameFlags::None,
                                  std::uint64_t timestamp_ns = 0) noexcept {
     CANFORGE_CHECK(validate_flags(flags));
     if (has_flag(flags, FrameFlags::Rtr) && len != 0u) {
-      return Error(ErrorCode::FrameBadFlags,
-                   "a remote frame carries no data bytes");
+      return Error(ErrorCode::FrameBadFlags, "a remote frame carries no data bytes");
     }
     if (len > Capacity) {
-      return Error(ErrorCode::FramePayloadTooLarge,
-                   "payload exceeds the frame capacity",
-                   {static_cast<std::uint32_t>(len),
-                    static_cast<std::uint32_t>(Capacity)});
+      return Error(
+          ErrorCode::FramePayloadTooLarge, "payload exceeds the frame capacity",
+          {static_cast<std::uint32_t>(len), static_cast<std::uint32_t>(Capacity)});
     }
     const bool fd = has_flag(flags, FrameFlags::Fd);
     CANFORGE_TRY(const auto fit, length_to_dlc(len, fd));
     if (fit.padding != 0u) {
-      return Error(ErrorCode::FrameBadDlc,
-                   "CAN FD has no data length code for this size; pad the "
-                   "payload to the next encodable length",
-                   {static_cast<std::uint32_t>(len),
-                    static_cast<std::uint32_t>(fit.length)});
+      return Error(
+          ErrorCode::FrameBadDlc,
+          "CAN FD has no data length code for this size; pad the "
+          "payload to the next encodable length",
+          {static_cast<std::uint32_t>(len), static_cast<std::uint32_t>(fit.length)});
     }
     BasicFrame f;
     f.id_ = id;
@@ -225,8 +215,7 @@ class BasicFrame {
   static Result<BasicFrame> make_remote(CanId id, std::uint8_t requested_len,
                                         std::uint64_t timestamp_ns = 0) noexcept {
     if (requested_len > 8u) {
-      return Error(ErrorCode::FrameBadDlc,
-                   "a remote frame may request at most 8 bytes",
+      return Error(ErrorCode::FrameBadDlc, "a remote frame may request at most 8 bytes",
                    {requested_len, 8u});
     }
     BasicFrame f;
@@ -314,9 +303,8 @@ class BasicFrame {
   }
 
   /// Precondition: the wire representation has already been validated.
-  void assign_unchecked(CanId id, std::uint8_t dlc, FrameFlags flags,
-                        std::uint64_t ts, const std::uint8_t* src,
-                        std::size_t len) noexcept {
+  void assign_unchecked(CanId id, std::uint8_t dlc, FrameFlags flags, std::uint64_t ts,
+                        const std::uint8_t* src, std::size_t len) noexcept {
     id_ = id;
     dlc_ = dlc;
     flags_ = flags;
@@ -336,11 +324,9 @@ class BasicFrame {
     // ISO 11898-1:2015 removed the remote frame from CAN FD: the RTR bit
     // position is reused by RRS, which is always dominant.
     if (fd && has_flag(flags, FrameFlags::Rtr)) {
-      return Error(ErrorCode::FrameBadFlags,
-                   "CAN FD has no remote frames");
+      return Error(ErrorCode::FrameBadFlags, "CAN FD has no remote frames");
     }
-    if (!fd && (has_flag(flags, FrameFlags::Brs) ||
-                has_flag(flags, FrameFlags::Esi))) {
+    if (!fd && (has_flag(flags, FrameFlags::Brs) || has_flag(flags, FrameFlags::Esi))) {
       return Error(ErrorCode::FrameBadFlags,
                    "BRS and ESI are only defined for CAN FD frames");
     }
@@ -355,14 +341,13 @@ class BasicFrame {
   std::array<std::uint8_t, Capacity> data_{};
 };
 
-using Frame = BasicFrame<8>;      ///< Classic CAN.
-using FdFrame = BasicFrame<64>;   ///< CAN FD.
+using Frame = BasicFrame<8>;     ///< Classic CAN.
+using FdFrame = BasicFrame<64>;  ///< CAN FD.
 
 static_assert(std::is_trivially_copyable_v<Frame>,
               "Frame must be trivially copyable so bus queues can memcpy it");
 static_assert(std::is_standard_layout_v<Frame>);
-static_assert(sizeof(Frame) <= 64,
-              "a classic frame must fit inside one cache line");
+static_assert(sizeof(Frame) <= 64, "a classic frame must fit inside one cache line");
 // At 24 bytes two frames plus a queue header still share a cache line, which is
 // what makes the virtual bus cheap.
 static_assert(sizeof(Frame) == 24, "unexpected classic frame layout");

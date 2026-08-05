@@ -103,9 +103,8 @@ class Message {
       return false;  // a database with a multiplexor cycle; refuse to loop
     }
     // A signal with no named multiplexor is switched by the message's root.
-    const Signal* sw = s.multiplexor_name().empty()
-                           ? multiplexor()
-                           : find_signal(s.multiplexor_name());
+    const Signal* sw = s.multiplexor_name().empty() ? multiplexor()
+                                                    : find_signal(s.multiplexor_name());
     if (sw == nullptr || sw == &s) {
       return false;
     }
@@ -155,8 +154,7 @@ class Message {
 
   /// Unknown names are an error, so a typo cannot silently produce an all-zero
   /// frame. Signals not named keep their existing value.
-  Result<Frame> encode(
-      const std::vector<std::pair<std::string, double>>& values) const;
+  Result<Frame> encode(const std::vector<std::pair<std::string, double>>& values) const;
 
   Status validate() const noexcept;
 

@@ -11,8 +11,8 @@ using core::FdFrame;
 using core::FrameFlags;
 
 FdFrame classic(bool extended, std::size_t bytes) {
-  const CanId id = extended ? CanId::extended(0x12345678).value()
-                            : CanId::standard(0x123).value();
+  const CanId id =
+      extended ? CanId::extended(0x12345678).value() : CanId::standard(0x123).value();
   return FdFrame::make(id, nullptr, bytes).value();
 }
 
@@ -80,8 +80,7 @@ TEST(Timing, FdUsesTheWiderCrcAboveSixteenBytes) {
   // Four extra data bytes are 32 bits; the CRC also grows from 17 to 21, so
   // the difference must exceed 32.
   EXPECT_GT(large.size() * 8u, 0u);
-  EXPECT_GT(frame_timing(large, t).data_bits - frame_timing(small, t).data_bits,
-            32u);
+  EXPECT_GT(frame_timing(large, t).data_bits - frame_timing(small, t).data_bits, 32u);
 }
 
 TEST(Filters, EmptyListAcceptsEverything) {

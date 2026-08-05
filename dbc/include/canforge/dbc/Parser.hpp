@@ -35,8 +35,7 @@ struct ParseResult {
 
 /// Parse DBC text. Never fails at the Result level for grammar problems: those
 /// land in `diagnostics` with as much of the database recovered as possible.
-ParseResult parse_string(std::string_view text,
-                         std::string_view filename = "<memory>");
+ParseResult parse_string(std::string_view text, std::string_view filename = "<memory>");
 
 /// Same, reading from disk. Fails only if the file cannot be read.
 core::Result<ParseResult> parse_file(const std::string& path);

@@ -16,8 +16,7 @@ FrameTiming classic_timing(const FdFrame& frame, const BusTiming& timing) noexce
       (frame.is_remote() ? std::size_t{0} : frame.size()) * 8u);
 
   // Region subject to bit stuffing: SOF through the end of the CRC sequence.
-  const std::uint32_t stuffable =
-      (frame.id().is_extended() ? 54u : 34u) + payload_bits;
+  const std::uint32_t stuffable = (frame.id().is_extended() ? 54u : 34u) + payload_bits;
   // Fixed-form region: CRC delimiter, ACK slot, ACK delimiter, EOF, IFS.
   constexpr std::uint32_t kTrailer = 1u + 1u + 1u + 7u + 3u;
 
@@ -59,18 +58,18 @@ FrameTiming fd_timing(const FdFrame& frame, const BusTiming& timing) noexcept {
   out.arbitration_bits = arbitration_core + kTrailer;
   out.data_bits = 1u + 4u + payload_bits + crc_field + out.stuff_bits;
 
-  const std::uint32_t data_rate =
-      frame.is_brs() && timing.data_bitrate != 0 ? timing.data_bitrate
-                                                 : timing.nominal_bitrate;
+  const std::uint32_t data_rate = frame.is_brs() && timing.data_bitrate != 0
+                                      ? timing.data_bitrate
+                                      : timing.nominal_bitrate;
   const std::uint64_t nominal_ns =
       timing.nominal_bitrate == 0
           ? 0
           : (static_cast<std::uint64_t>(out.arbitration_bits) * 1000000000ULL) /
                 timing.nominal_bitrate;
   const std::uint64_t data_ns =
-      data_rate == 0 ? 0
-                     : (static_cast<std::uint64_t>(out.data_bits) * 1000000000ULL) /
-                           data_rate;
+      data_rate == 0
+          ? 0
+          : (static_cast<std::uint64_t>(out.data_bits) * 1000000000ULL) / data_rate;
   out.nanoseconds = nominal_ns + data_ns;
   return out;
 }

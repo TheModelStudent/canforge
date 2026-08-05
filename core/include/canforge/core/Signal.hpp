@@ -50,9 +50,9 @@ enum class Signedness : std::uint8_t { Unsigned = 0, Signed = 1 };
 enum class ValueType : std::uint8_t { Integer = 0, Float32 = 1, Float64 = 2 };
 
 enum class MultiplexRole : std::uint8_t {
-  None = 0,        ///< Always present.
-  Multiplexor,     ///< `M` -- selects which multiplexed signals are present.
-  Multiplexed,     ///< `m<n>` -- present only for specific multiplexor values.
+  None = 0,     ///< Always present.
+  Multiplexor,  ///< `M` -- selects which multiplexed signals are present.
+  Multiplexed,  ///< `m<n>` -- present only for specific multiplexor values.
   /// m<n>M -- switched in by an outer multiplexor and itself switching an inner
   /// group. Only SG_MUL_VAL_ can describe this fully.
   Both,
@@ -92,9 +92,7 @@ struct SignalLayout {
 
   /// DBC writes [0|0] when no range is given, so an all-zero range means
   /// unbounded, not "the value must be exactly zero".
-  constexpr bool has_range() const noexcept {
-    return minimum != 0.0 || maximum != 0.0;
-  }
+  constexpr bool has_range() const noexcept { return minimum != 0.0 || maximum != 0.0; }
 
   /// First bit of the signal in canonical space. Intel starts at the LSB and
   /// Motorola at the MSB, but both runs ascend -- that is the whole point.

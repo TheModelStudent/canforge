@@ -34,8 +34,7 @@ std::size_t g_allocations_seen = 0;
 void trip(const char* which) {
   if (g_trap_armed) {
     g_trap_armed = false;  // avoid recursing through fprintf's own buffers
-    std::fprintf(stderr,
-                 "canforge: allocation via %s inside a no-allocation region\n",
+    std::fprintf(stderr, "canforge: allocation via %s inside a no-allocation region\n",
                  which);
     std::abort();
   }
@@ -83,14 +82,30 @@ void* operator new[](std::size_t size, std::align_val_t) {
   return checked_malloc(size);
 }
 
-void operator delete(void* p) noexcept { std::free(p); }
-void operator delete[](void* p) noexcept { std::free(p); }
-void operator delete(void* p, std::size_t) noexcept { std::free(p); }
-void operator delete[](void* p, std::size_t) noexcept { std::free(p); }
-void operator delete(void* p, const std::nothrow_t&) noexcept { std::free(p); }
-void operator delete[](void* p, const std::nothrow_t&) noexcept { std::free(p); }
-void operator delete(void* p, std::align_val_t) noexcept { std::free(p); }
-void operator delete[](void* p, std::align_val_t) noexcept { std::free(p); }
+void operator delete(void* p) noexcept {
+  std::free(p);
+}
+void operator delete[](void* p) noexcept {
+  std::free(p);
+}
+void operator delete(void* p, std::size_t) noexcept {
+  std::free(p);
+}
+void operator delete[](void* p, std::size_t) noexcept {
+  std::free(p);
+}
+void operator delete(void* p, const std::nothrow_t&) noexcept {
+  std::free(p);
+}
+void operator delete[](void* p, const std::nothrow_t&) noexcept {
+  std::free(p);
+}
+void operator delete(void* p, std::align_val_t) noexcept {
+  std::free(p);
+}
+void operator delete[](void* p, std::align_val_t) noexcept {
+  std::free(p);
+}
 void operator delete(void* p, std::size_t, std::align_val_t) noexcept {
   std::free(p);
 }
@@ -136,18 +151,27 @@ TEST(NoAllocSelfCheck, ReplacementOperatorsAreLinkedIn) {
 TEST(NoAlloc, SignalCodecAllocatesNothing) {
   // Build everything, including the Frames, before arming.
   const std::array<SignalLayout, 8> layouts = {{
-      {0, 8, ByteOrder::Intel, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0, 0.0, 0.0},
-      {0, 16, ByteOrder::Intel, Signedness::Signed, ValueType::Integer, 0.1, -40.0, 0.0, 0.0},
-      {7, 16, ByteOrder::Motorola, Signedness::Unsigned, ValueType::Integer, 0.125, 0.0, 0.0, 0.0},
-      {13, 10, ByteOrder::Motorola, Signedness::Signed, ValueType::Integer, 1.0, 0.0, 0.0, 0.0},
-      {28, 8, ByteOrder::Intel, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0, 0.0, 0.0},
-      {0, 64, ByteOrder::Intel, Signedness::Signed, ValueType::Integer, 1.0, 0.0, 0.0, 0.0},
-      {7, 64, ByteOrder::Motorola, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0, 0.0, 0.0},
-      {0, 32, ByteOrder::Intel, Signedness::Unsigned, ValueType::Float32, 1.0, 0.0, 0.0, 0.0},
+      {0, 8, ByteOrder::Intel, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0, 0.0,
+       0.0},
+      {0, 16, ByteOrder::Intel, Signedness::Signed, ValueType::Integer, 0.1, -40.0, 0.0,
+       0.0},
+      {7, 16, ByteOrder::Motorola, Signedness::Unsigned, ValueType::Integer, 0.125, 0.0,
+       0.0, 0.0},
+      {13, 10, ByteOrder::Motorola, Signedness::Signed, ValueType::Integer, 1.0, 0.0,
+       0.0, 0.0},
+      {28, 8, ByteOrder::Intel, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0, 0.0,
+       0.0},
+      {0, 64, ByteOrder::Intel, Signedness::Signed, ValueType::Integer, 1.0, 0.0, 0.0,
+       0.0},
+      {7, 64, ByteOrder::Motorola, Signedness::Unsigned, ValueType::Integer, 1.0, 0.0,
+       0.0, 0.0},
+      {0, 32, ByteOrder::Intel, Signedness::Unsigned, ValueType::Float32, 1.0, 0.0, 0.0,
+       0.0},
   }};
 
   const auto id = CanId::make_standard<0x123>();
-  auto frame = Frame::make(id, {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}).value();
+  auto frame =
+      Frame::make(id, {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}).value();
 
   // Named Signals own strings, so they are built outside the trap; only their
   // decode path is measured.
@@ -234,8 +258,7 @@ TEST(NoAlloc, FrameConstructionAllocatesNothing) {
   {
     AllocationTrap guard;
     for (int i = 0; i < 10000; ++i) {
-      const auto f = Frame::make(id, payload.data(), payload.size(),
-                                 FrameFlags::None,
+      const auto f = Frame::make(id, payload.data(), payload.size(), FrameFlags::None,
                                  static_cast<std::uint64_t>(i));
       if (f) {
         ++built;

@@ -29,8 +29,8 @@ core::Database load_db() {
 core::FdFrame engine_frame(const core::Database& db, std::uint64_t at_ns,
                            std::uint16_t rpm_raw = 8000) {
   const core::Message* m = db.find_message("EngineData");
-  auto frame = core::FdFrame::make_empty(m->id(), 8, core::FrameFlags::None, at_ns)
-                   .value();
+  auto frame =
+      core::FdFrame::make_empty(m->id(), 8, core::FrameFlags::None, at_ns).value();
   m->find_signal("EngineSpeed")->layout().encode_raw(rpm_raw, frame.data());
   return frame;
 }

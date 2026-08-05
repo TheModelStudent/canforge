@@ -79,8 +79,7 @@ SourcePtr ramp(double from, double to, std::uint64_t over_ns,
                RampMode mode = RampMode::Clamp);
 SourcePtr sine(double amplitude, double frequency_hz, double offset = 0.0,
                double phase_degrees = 0.0);
-SourcePtr square(double low, double high, std::uint64_t period_ns,
-                 double duty = 0.5);
+SourcePtr square(double low, double high, std::uint64_t period_ns, double duty = 0.5);
 /// A bounded random walk. `interval_ns` is how often it takes a step, so the
 /// result does not depend on how finely the simulation is stepped.
 SourcePtr random_walk(double start, double step, double low, double high,

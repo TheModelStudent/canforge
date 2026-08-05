@@ -43,8 +43,9 @@ Result<DlcFit> length_to_dlc(std::size_t len, bool fd) noexcept {
   for (std::uint8_t dlc = 0; dlc < 16u; ++dlc) {
     const std::uint8_t encoded = kFdDlcToLength[dlc];
     if (encoded >= len) {
-      return DlcFit{dlc, encoded,
-                    static_cast<std::uint8_t>(encoded - static_cast<std::uint8_t>(len))};
+      return DlcFit{
+          dlc, encoded,
+          static_cast<std::uint8_t>(encoded - static_cast<std::uint8_t>(len))};
     }
   }
   return Error(ErrorCode::FrameBadDlc, "unreachable: no data length code found");

@@ -8,7 +8,9 @@ namespace {
 
 constexpr std::uint64_t kMs = 1000000ULL;
 
-Vehicle make() { return Vehicle(VehicleParams{}); }
+Vehicle make() {
+  return Vehicle(VehicleParams{});
+}
 
 void run(Vehicle& v, double seconds) {
   for (int i = 0; i < static_cast<int>(seconds * 100); ++i) {
@@ -73,7 +75,8 @@ TEST(Vehicle, HigherGearGivesLowerRpmAtTheSameSpeed) {
 
   // Same road speed band, but the taller gear turns the engine slower per
   // unit of road speed.
-  const double low_ratio = low.state().engine_rpm / std::max(0.1, low.state().speed_mps);
+  const double low_ratio =
+      low.state().engine_rpm / std::max(0.1, low.state().speed_mps);
   const double high_ratio =
       high.state().engine_rpm / std::max(0.1, high.state().speed_mps);
   EXPECT_LT(high_ratio, low_ratio);

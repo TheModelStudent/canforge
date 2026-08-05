@@ -27,8 +27,7 @@ struct Fixture {
   std::unique_ptr<VirtualBus> b;
   std::unique_ptr<VirtualBus> c;
 
-  explicit Fixture(BusTiming t = {500000, 2000000})
-      : medium(VirtualMedium::create(t)) {
+  explicit Fixture(BusTiming t = {500000, 2000000}) : medium(VirtualMedium::create(t)) {
     a = medium->attach("ECM");
     b = medium->attach("TCM");
     c = medium->attach("DASH");
@@ -184,8 +183,8 @@ TEST(Arbitration, AHighPriorityTalkerCanStarveALowPriorityOne) {
   // Step through twenty frame times one at a time.
   for (int round = 0; round < 20; ++round) {
     f.medium->advance(us(270));
-    EXPECT_EQ(f.b->pending(), 1u) << "round " << round
-                                  << ": the low priority frame is still stuck";
+    EXPECT_EQ(f.b->pending(), 1u)
+        << "round " << round << ": the low priority frame is still stuck";
   }
   EXPECT_GE(f.b->statistics().arbitration_losses, 20u);
 
@@ -205,8 +204,8 @@ TEST(Arbitration, NoArbitrationEventWhenOnlyOneNodeIsTalking) {
 
 TEST(VirtualBus, FiltersApplyOnReceive) {
   Fixture f;
-  ASSERT_TRUE(f.b->set_filters({Filter::exact(CanId::standard(0x200).value())})
-                  .has_value());
+  ASSERT_TRUE(
+      f.b->set_filters({Filter::exact(CanId::standard(0x200).value())}).has_value());
   ASSERT_TRUE(f.a->send(data_frame(0x100)).has_value());
   ASSERT_TRUE(f.a->send(data_frame(0x200)).has_value());
   f.medium->drain();

@@ -63,8 +63,7 @@ std::string fg(double v) {
 
 std::string hex_id(core::CanId id) {
   char buffer[16];
-  std::snprintf(buffer, sizeof(buffer), id.is_extended() ? "%08X" : "%03X",
-                id.value());
+  std::snprintf(buffer, sizeof(buffer), id.is_extended() ? "%08X" : "%03X", id.value());
   return buffer;
 }
 
@@ -87,8 +86,8 @@ std::string hex_bytes(const std::array<std::uint8_t, 64>& data, std::size_t n) {
 
 /// A stable colour per node, so the same ECU is the same colour every run.
 Color node_colour(const std::string& node) {
-  static const Color kPalette[] = {Color::Cyan,    Color::Green,  Color::Yellow,
-                                   Color::Magenta, Color::Blue,   Color::RedLight,
+  static const Color kPalette[] = {Color::Cyan,       Color::Green,    Color::Yellow,
+                                   Color::Magenta,    Color::Blue,     Color::RedLight,
                                    Color::GreenLight, Color::CyanLight};
   std::size_t hash = 5381;
   for (const char c : node) {
@@ -206,9 +205,10 @@ struct Dashboard::Impl {
     const SignalHistory history = model->history();
     const std::string selected = model->selected_signal();
     Elements rows;
-    rows.push_back(hbox({text("signal: ") | bold,
-                         text(selected.empty() ? "<none selected, press s>" : selected) |
-                             color(Color::Cyan)}));
+    rows.push_back(
+        hbox({text("signal: ") | bold,
+              text(selected.empty() ? "<none selected, press s>" : selected) |
+                  color(Color::Cyan)}));
     if (history.empty()) {
       rows.push_back(text("no samples yet") | color(Color::GrayDark));
       return vbox(std::move(rows)) | flex;
@@ -237,12 +237,15 @@ struct Dashboard::Impl {
   Element render_stats(const Snapshot& snap) const {
     const double load = snap.bus_load * 100.0;
     const int bar_width = 40;
-    const int filled = std::clamp(static_cast<int>(load / 100.0 * bar_width), 0, bar_width);
+    const int filled =
+        std::clamp(static_cast<int>(load / 100.0 * bar_width), 0, bar_width);
     Elements rows;
     rows.push_back(hbox({
         text("bus load  ") | bold,
         text(std::string(static_cast<std::size_t>(filled), '#')) |
-            color(load > 80.0 ? Color::Red : load > 50.0 ? Color::Yellow : Color::Green),
+            color(load > 80.0   ? Color::Red
+                  : load > 50.0 ? Color::Yellow
+                                : Color::Green),
         text(std::string(static_cast<std::size_t>(bar_width - filled), '.')) |
             color(Color::GrayDark),
         text("  " + f1(load) + "%"),
@@ -250,8 +253,8 @@ struct Dashboard::Impl {
     rows.push_back(text(""));
     rows.push_back(hbox({text("frames received  ") | bold,
                          text(std::to_string(snap.bus.frames_received))}));
-    rows.push_back(hbox({text("frames per second") | bold,
-                         text("  " + f0(snap.frames_per_second))}));
+    rows.push_back(hbox(
+        {text("frames per second") | bold, text("  " + f0(snap.frames_per_second))}));
     rows.push_back(hbox({text("bytes received   ") | bold,
                          text(std::to_string(snap.bus.bytes_received))}));
     // Color's palette enumerators are distinct types, so a ternary over two of
@@ -267,11 +270,10 @@ struct Dashboard::Impl {
     rows.push_back(text(""));
     rows.push_back(text("per node") | bold | inverted);
     for (const NodeStats& n : snap.nodes) {
-      const double share =
-          snap.bus.wire_bits != 0
-              ? 100.0 * static_cast<double>(n.wire_bits) /
-                    static_cast<double>(snap.bus.wire_bits)
-              : 0.0;
+      const double share = snap.bus.wire_bits != 0
+                               ? 100.0 * static_cast<double>(n.wire_bits) /
+                                     static_cast<double>(snap.bus.wire_bits)
+                               : 0.0;
       std::string name = n.name;
       name.resize(14, ' ');
       rows.push_back(hbox({
@@ -297,8 +299,9 @@ struct Dashboard::Impl {
                    color(Color::GrayDark));
     rows.push_back(text(""));
     if (!tx_status.empty()) {
-      rows.push_back(text(tx_status) |
-                     color(tx_status.rfind("sent", 0) == 0 ? Color::Green : Color::Red));
+      rows.push_back(
+          text(tx_status) |
+          color(tx_status.rfind("sent", 0) == 0 ? Color::Green : Color::Red));
     }
     return vbox(std::move(rows)) | flex;
   }
@@ -358,8 +361,8 @@ int Dashboard::run() {
     const Snapshot snap = s.model->snapshot();
 
     Elements tabs;
-    static const char* kNames[] = {"1 trace", "2 grouped", "3 plot",
-                                   "4 statistics", "5 transmit"};
+    static const char* kNames[] = {"1 trace", "2 grouped", "3 plot", "4 statistics",
+                                   "5 transmit"};
     for (int i = 0; i < 5; ++i) {
       tabs.push_back(i == s.view ? (text(std::string(" ") + kNames[i] + " ") | inverted)
                                  : (text(std::string(" ") + kNames[i] + " ") |
@@ -368,11 +371,21 @@ int Dashboard::run() {
 
     Element body;
     switch (s.view) {
-      case 0: body = s.render_trace(snap); break;
-      case 1: body = s.render_grouped(snap); break;
-      case 2: body = s.render_plot(snap); break;
-      case 3: body = s.render_stats(snap); break;
-      default: body = s.render_transmit(); break;
+      case 0:
+        body = s.render_trace(snap);
+        break;
+      case 1:
+        body = s.render_grouped(snap);
+        break;
+      case 2:
+        body = s.render_plot(snap);
+        break;
+      case 3:
+        body = s.render_stats(snap);
+        break;
+      default:
+        body = s.render_transmit();
+        break;
     }
 
     Elements status;
@@ -396,17 +409,16 @@ int Dashboard::run() {
         hbox(std::move(status)),
     });
     if (s.view == 2) {
-      page = vbox({page, hbox({text("signal: "),
-                               signal_input->Render() | size(WIDTH, EQUAL, 30) |
-                                   inverted})});
+      page =
+          vbox({page, hbox({text("signal: "), signal_input->Render() |
+                                                  size(WIDTH, EQUAL, 30) | inverted})});
     }
     if (s.view == 4) {
-      page = vbox({page, hbox({text("message: "),
-                               tx_message_input->Render() | size(WIDTH, EQUAL, 24) |
-                                   inverted}),
-                   hbox({text("values:  "),
-                         tx_values_input->Render() | size(WIDTH, EQUAL, 48) |
-                             inverted})});
+      page = vbox({page,
+                   hbox({text("message: "), tx_message_input->Render() |
+                                                size(WIDTH, EQUAL, 24) | inverted}),
+                   hbox({text("values:  "), tx_values_input->Render() |
+                                                size(WIDTH, EQUAL, 48) | inverted})});
     }
     if (s.help) {
       return dbox({page, s.render_help()});

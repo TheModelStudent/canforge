@@ -52,8 +52,7 @@ void Vehicle::integrate(double dt_s) {
   const VehicleParams& p = params_;
   VehicleState& s = state_;
 
-  const bool in_gear = s.gear >= 1 &&
-                       s.gear <= static_cast<int>(p.gear_ratios.size());
+  const bool in_gear = s.gear >= 1 && s.gear <= static_cast<int>(p.gear_ratios.size());
   const double ratio =
       in_gear ? p.gear_ratios[static_cast<std::size_t>(s.gear - 1)] * p.final_drive
               : 0.0;
@@ -71,10 +70,9 @@ void Vehicle::integrate(double dt_s) {
 
   // Road load at the wheels.
   const double drag = p.drag_area * s.speed_mps * std::fabs(s.speed_mps);
-  const double roll = p.rolling_resistance * p.mass_kg * 9.81 *
-                      (s.speed_mps > 0.01 ? 1.0 : 0.0);
-  const double brake_force =
-      p.brake_torque_per_bar * s.brake_bar / p.wheel_radius_m;
+  const double roll =
+      p.rolling_resistance * p.mass_kg * 9.81 * (s.speed_mps > 0.01 ? 1.0 : 0.0);
+  const double brake_force = p.brake_torque_per_bar * s.brake_bar / p.wheel_radius_m;
 
   double drive_force = 0.0;
   if (in_gear) {
@@ -123,29 +121,62 @@ void Vehicle::integrate(double dt_s) {
 
 bool Vehicle::read(std::string_view field, double& out) const noexcept {
   const VehicleState& s = state_;
-  if (field == "engine_rpm")       { out = s.engine_rpm; return true; }
-  if (field == "speed_mps")        { out = s.speed_mps; return true; }
-  if (field == "speed_kmh")        { out = s.speed_mps * 3.6; return true; }
-  if (field == "wheel_rpm")        {
+  if (field == "engine_rpm") {
+    out = s.engine_rpm;
+    return true;
+  }
+  if (field == "speed_mps") {
+    out = s.speed_mps;
+    return true;
+  }
+  if (field == "speed_kmh") {
+    out = s.speed_mps * 3.6;
+    return true;
+  }
+  if (field == "wheel_rpm") {
     out = s.speed_mps / params_.wheel_radius_m / kRpmToRadPerSec;
     return true;
   }
-  if (field == "gear")             { out = static_cast<double>(s.gear); return true; }
-  if (field == "throttle_pct")     { out = s.throttle_pct; return true; }
-  if (field == "brake_bar")        { out = s.brake_bar; return true; }
-  if (field == "engine_torque_nm") { out = s.engine_torque_nm; return true; }
-  if (field == "coolant_temp_c")   { out = s.coolant_temp_c; return true; }
-  if (field == "fuel_rate_lph")    { out = s.fuel_rate_lph; return true; }
-  if (field == "distance_m")       { out = s.distance_m; return true; }
-  if (field == "accel_mps2")       { out = s.acceleration_mps2; return true; }
+  if (field == "gear") {
+    out = static_cast<double>(s.gear);
+    return true;
+  }
+  if (field == "throttle_pct") {
+    out = s.throttle_pct;
+    return true;
+  }
+  if (field == "brake_bar") {
+    out = s.brake_bar;
+    return true;
+  }
+  if (field == "engine_torque_nm") {
+    out = s.engine_torque_nm;
+    return true;
+  }
+  if (field == "coolant_temp_c") {
+    out = s.coolant_temp_c;
+    return true;
+  }
+  if (field == "fuel_rate_lph") {
+    out = s.fuel_rate_lph;
+    return true;
+  }
+  if (field == "distance_m") {
+    out = s.distance_m;
+    return true;
+  }
+  if (field == "accel_mps2") {
+    out = s.acceleration_mps2;
+    return true;
+  }
   return false;
 }
 
 const std::vector<std::string_view>& Vehicle::field_names() {
   static const std::vector<std::string_view> names = {
-      "engine_rpm", "speed_mps",        "speed_kmh",     "wheel_rpm",
-      "gear",       "throttle_pct",     "brake_bar",     "engine_torque_nm",
-      "coolant_temp_c", "fuel_rate_lph", "distance_m",   "accel_mps2"};
+      "engine_rpm",     "speed_mps",     "speed_kmh",  "wheel_rpm",
+      "gear",           "throttle_pct",  "brake_bar",  "engine_torque_nm",
+      "coolant_temp_c", "fuel_rate_lph", "distance_m", "accel_mps2"};
   return names;
 }
 

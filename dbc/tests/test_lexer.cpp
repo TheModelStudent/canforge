@@ -24,7 +24,10 @@ Lexed lex(std::string text) {
 }
 
 TEST(Source, StripsUtf8Bom) {
-  const auto s = Source::normalise("\xEF\xBB\xBF" "VERSION \"1\"\n", "x");
+  const auto s = Source::normalise(
+      "\xEF\xBB\xBF"
+      "VERSION \"1\"\n",
+      "x");
   EXPECT_TRUE(s.had_bom());
   EXPECT_EQ(s.text().substr(0, 7), "VERSION");
 }
@@ -49,7 +52,9 @@ TEST(Source, AddsAMissingFinalNewline) {
 
 TEST(Source, TranscodesLatin1) {
   // 0xFC is 'u with diaeresis' in Latin-1 and an invalid UTF-8 lead byte.
-  const std::string latin1 = "CM_ \"K\xFC" "hlung\";\n";
+  const std::string latin1 =
+      "CM_ \"K\xFC"
+      "hlung\";\n";
   const auto s = Source::normalise(latin1, "x");
   EXPECT_TRUE(s.had_latin1());
   EXPECT_NE(s.text().find("\xC3\xBC"), std::string::npos)
@@ -57,7 +62,9 @@ TEST(Source, TranscodesLatin1) {
 }
 
 TEST(Source, LeavesValidUtf8Alone) {
-  const std::string utf8 = "CM_ \"K\xC3\xBC" "hlung\";\n";
+  const std::string utf8 =
+      "CM_ \"K\xC3\xBC"
+      "hlung\";\n";
   const auto s = Source::normalise(utf8, "x");
   EXPECT_FALSE(s.had_latin1());
   EXPECT_EQ(s.text(), utf8);

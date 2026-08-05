@@ -9,22 +9,26 @@ namespace canforge::core {
 
 const char* to_string(AttributeObject o) noexcept {
   switch (o) {
+      // clang-format off
     case AttributeObject::Database: return "database";
     case AttributeObject::Node:     return "node";
     case AttributeObject::Message:  return "message";
     case AttributeObject::Signal:   return "signal";
     case AttributeObject::EnvVar:   return "environment variable";
+      // clang-format on
   }
   return "unknown";
 }
 
 const char* to_string(AttributeType t) noexcept {
   switch (t) {
+      // clang-format off
     case AttributeType::Int:    return "INT";
     case AttributeType::Hex:    return "HEX";
     case AttributeType::Float:  return "FLOAT";
     case AttributeType::String: return "STRING";
     case AttributeType::Enum:   return "ENUM";
+      // clang-format on
   }
   return "UNKNOWN";
 }
@@ -103,16 +107,14 @@ Status Database::validate() const noexcept {
                      {messages_[i].id().value(), 0});
       }
       if (messages_[i].name() == messages_[j].name()) {
-        return Error(ErrorCode::ParseDuplicateDefinition,
-                     "two messages share a name");
+        return Error(ErrorCode::ParseDuplicateDefinition, "two messages share a name");
       }
     }
   }
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
     for (std::size_t j = i + 1; j < nodes_.size(); ++j) {
       if (nodes_[i].name == nodes_[j].name) {
-        return Error(ErrorCode::ParseDuplicateDefinition,
-                     "two nodes share a name");
+        return Error(ErrorCode::ParseDuplicateDefinition, "two nodes share a name");
       }
     }
   }
@@ -129,10 +131,9 @@ void mark_bits(const SignalLayout& s, std::array<std::uint8_t, 64>& bits) {
       return;
     }
     const std::size_t byte = q / 8u;
-    const std::uint8_t bit =
-        s.byte_order == ByteOrder::Intel
-            ? static_cast<std::uint8_t>(q % 8u)
-            : static_cast<std::uint8_t>(7u - (q % 8u));
+    const std::uint8_t bit = s.byte_order == ByteOrder::Intel
+                                 ? static_cast<std::uint8_t>(q % 8u)
+                                 : static_cast<std::uint8_t>(7u - (q % 8u));
     bits[byte] = static_cast<std::uint8_t>(bits[byte] | (1u << bit));
   }
 }
@@ -172,11 +173,10 @@ std::vector<std::string> Database::lint() const {
       for (std::size_t j = i + 1; j < m.signals().size(); ++j) {
         const Signal& a = m.signals()[i];
         const Signal& b = m.signals()[j];
-        const bool mux_separated =
-            a.multiplex_role() == MultiplexRole::Multiplexed &&
-            b.multiplex_role() == MultiplexRole::Multiplexed &&
-            !(a.is_present_for(b.multiplex_value()) &&
-              b.is_present_for(a.multiplex_value()));
+        const bool mux_separated = a.multiplex_role() == MultiplexRole::Multiplexed &&
+                                   b.multiplex_role() == MultiplexRole::Multiplexed &&
+                                   !(a.is_present_for(b.multiplex_value()) &&
+                                     b.is_present_for(a.multiplex_value()));
         if (!mux_separated && overlaps(a.layout(), b.layout())) {
           out.push_back("signals '" + a.name() + "' and '" + b.name() +
                         "' in message '" + m.name() + "' overlap");
@@ -185,8 +185,8 @@ std::vector<std::string> Database::lint() const {
     }
     for (const Signal& s : m.signals()) {
       if (!s.layout().fits(m.dlc())) {
-        out.push_back("signal '" + s.name() + "' does not fit in message '" +
-                      m.name() + "'");
+        out.push_back("signal '" + s.name() + "' does not fit in message '" + m.name() +
+                      "'");
       }
       if (s.layout().has_range() && s.layout().minimum > s.layout().maximum) {
         out.push_back("signal '" + s.name() + "' declares a minimum above its maximum");

@@ -54,7 +54,9 @@ class Ramp final : public SignalSource {
 class Sine final : public SignalSource {
  public:
   Sine(double amplitude, double hz, double offset, double phase_deg)
-      : amp_(amplitude), hz_(hz), offset_(offset),
+      : amp_(amplitude),
+        hz_(hz),
+        offset_(offset),
         phase_(phase_deg * 3.14159265358979323846 / 180.0) {}
 
   double sample(std::uint64_t t) override {
@@ -73,11 +75,14 @@ class Sine final : public SignalSource {
 class Square final : public SignalSource {
  public:
   Square(double low, double high, std::uint64_t period_ns, double duty)
-      : low_(low), high_(high), period_(period_ns == 0 ? 1 : period_ns),
+      : low_(low),
+        high_(high),
+        period_(period_ns == 0 ? 1 : period_ns),
         duty_(std::clamp(duty, 0.0, 1.0)) {}
 
   double sample(std::uint64_t t) override {
-    const double phase = static_cast<double>(t % period_) / static_cast<double>(period_);
+    const double phase =
+        static_cast<double>(t % period_) / static_cast<double>(period_);
     return phase < duty_ ? high_ : low_;
   }
 
@@ -93,9 +98,13 @@ class Square final : public SignalSource {
 /// 10 ms produce the same trace.
 class RandomWalk final : public SignalSource {
  public:
-  RandomWalk(double start, double step, double low, double high,
-             std::uint64_t seed, std::uint64_t interval_ns)
-      : start_(start), step_(step), low_(low), high_(high), seed_(seed),
+  RandomWalk(double start, double step, double low, double high, std::uint64_t seed,
+             std::uint64_t interval_ns)
+      : start_(start),
+        step_(step),
+        low_(low),
+        high_(high),
+        seed_(seed),
         interval_(interval_ns == 0 ? 1 : interval_ns) {
     reset();
   }
@@ -135,10 +144,9 @@ class Keyframes final : public SignalSource {
  public:
   Keyframes(std::vector<Keyframe> frames, bool interpolate)
       : frames_(std::move(frames)), interpolate_(interpolate) {
-    std::stable_sort(frames_.begin(), frames_.end(),
-                     [](const Keyframe& a, const Keyframe& b) {
-                       return a.at_ns < b.at_ns;
-                     });
+    std::stable_sort(
+        frames_.begin(), frames_.end(),
+        [](const Keyframe& a, const Keyframe& b) { return a.at_ns < b.at_ns; });
   }
 
   double sample(std::uint64_t t) override {
@@ -240,7 +248,9 @@ std::uint64_t SteadyClock::now_ns() const noexcept {
   return now - origin_ns_;
 }
 
-SourcePtr constant(double value) { return std::make_unique<Constant>(value); }
+SourcePtr constant(double value) {
+  return std::make_unique<Constant>(value);
+}
 
 SourcePtr ramp(double from, double to, std::uint64_t over_ns, RampMode mode) {
   return std::make_unique<Ramp>(from, to, over_ns, mode);

@@ -23,8 +23,7 @@ std::uint32_t read_be(const std::vector<std::uint8_t>& data, std::size_t at,
   return value;
 }
 
-void push_be(std::vector<std::uint8_t>& out, std::uint32_t value,
-             std::uint8_t bytes) {
+void push_be(std::vector<std::uint8_t>& out, std::uint32_t value, std::uint8_t bytes) {
   for (std::uint8_t i = bytes; i > 0; --i) {
     out.push_back(static_cast<std::uint8_t>((value >> ((i - 1u) * 8u)) & 0xFFu));
   }
@@ -47,27 +46,26 @@ UdsServerConfig default_server_config(isotp::Config transport) {
   config.transport = transport;
 
   const std::string vin = "CANFORGE0SIM00001";
-  config.data_by_identifier[0xF190] =
-      std::vector<std::uint8_t>(vin.begin(), vin.end());
+  config.data_by_identifier[0xF190] = std::vector<std::uint8_t>(vin.begin(), vin.end());
   const std::string sw = "SW-1.4.2";
-  config.data_by_identifier[0xF189] =
-      std::vector<std::uint8_t>(sw.begin(), sw.end());
+  config.data_by_identifier[0xF189] = std::vector<std::uint8_t>(sw.begin(), sw.end());
   const std::string supplier = "canforge";
   config.data_by_identifier[0xF18A] =
       std::vector<std::uint8_t>(supplier.begin(), supplier.end());
   config.data_by_identifier[0x0100] = {0x00, 0x00};  // a writable scratch DID
 
   config.dtcs = {
-      {0x010301, static_cast<std::uint8_t>(
-                     static_cast<std::uint8_t>(uds::DtcStatusBit::ConfirmedDtc) |
-                     static_cast<std::uint8_t>(uds::DtcStatusBit::TestFailed)),
+      {0x010301,
+       static_cast<std::uint8_t>(
+           static_cast<std::uint8_t>(uds::DtcStatusBit::ConfirmedDtc) |
+           static_cast<std::uint8_t>(uds::DtcStatusBit::TestFailed)),
        "cylinder 1 misfire"},
       {0x011716, static_cast<std::uint8_t>(uds::DtcStatusBit::PendingDtc),
        "coolant temperature circuit low"},
-      {0xC00A00, static_cast<std::uint8_t>(
-                     static_cast<std::uint8_t>(uds::DtcStatusBit::ConfirmedDtc) |
-                     static_cast<std::uint8_t>(
-                         uds::DtcStatusBit::WarningIndicatorRequested)),
+      {0xC00A00,
+       static_cast<std::uint8_t>(
+           static_cast<std::uint8_t>(uds::DtcStatusBit::ConfirmedDtc) |
+           static_cast<std::uint8_t>(uds::DtcStatusBit::WarningIndicatorRequested)),
        "lost communication with TCM"},
   };
   return config;
@@ -81,8 +79,7 @@ UdsServer::UdsServer(UdsServerConfig config)
   flash_.assign(config_.flash_size, 0xFFu);  // erased flash reads as all ones
 }
 
-std::vector<std::uint8_t> UdsServer::negative(std::uint8_t service,
-                                              Nrc nrc) const {
+std::vector<std::uint8_t> UdsServer::negative(std::uint8_t service, Nrc nrc) const {
   return {kNegative, service, static_cast<std::uint8_t>(nrc)};
 }
 
@@ -170,15 +167,14 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
       service == static_cast<std::uint8_t>(Service::TesterPresent);
   const bool suppress =
       has_sub_function && request.size() >= 2 && (request[1] & kSuppress) != 0u;
-  const auto sub = static_cast<std::uint8_t>(
-      request.size() >= 2 ? (request[1] & 0x7Fu) : 0u);
+  const auto sub =
+      static_cast<std::uint8_t>(request.size() >= 2 ? (request[1] & 0x7Fu) : 0u);
 
   const auto positive = [&](std::vector<std::uint8_t> body) {
     if (suppress) {
       return std::vector<std::uint8_t>{};
     }
-    std::vector<std::uint8_t> out = {
-        static_cast<std::uint8_t>(service + kPositive)};
+    std::vector<std::uint8_t> out = {static_cast<std::uint8_t>(service + kPositive)};
     out.insert(out.end(), body.begin(), body.end());
     return out;
   };
@@ -268,8 +264,9 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
         // requestSeed. A seed of zero means "already unlocked", which is
         // the standard prescribes and what tools check for.
         security_level_ = sub;
-        last_seed_ = unlocked_ ? 0u : (0xC0FFEEu ^ static_cast<std::uint32_t>(
-                                                       now_ns & 0xFFFFFFu));
+        last_seed_ = unlocked_
+                         ? 0u
+                         : (0xC0FFEEu ^ static_cast<std::uint32_t>(now_ns & 0xFFFFFFu));
         std::vector<std::uint8_t> body = {sub};
         push_be(body, last_seed_, 4);
         return positive(std::move(body));
@@ -328,10 +325,9 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
       }
       if (type == uds::DtcReportType::ReportDtcByStatusMask ||
           type == uds::DtcReportType::ReportSupportedDtc) {
-        const std::uint8_t mask =
-            type == uds::DtcReportType::ReportSupportedDtc
-                ? 0xFFu
-                : (request.size() >= 3 ? request[2] : 0xFFu);
+        const std::uint8_t mask = type == uds::DtcReportType::ReportSupportedDtc
+                                      ? 0xFFu
+                                      : (request.size() >= 3 ? request[2] : 0xFFu);
         std::vector<std::uint8_t> body = {sub, 0xFF};  // status availability
         for (const uds::Dtc& d : dtcs_) {
           if (type == uds::DtcReportType::ReportSupportedDtc ||
@@ -370,9 +366,9 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
           deferred_service_ = service;
           deferred_until_ns_ = now_ns + config_.erase_duration_ns;
           pending_left_ = 1;
-          return {static_cast<std::uint8_t>(kNegative), service,
-                  static_cast<std::uint8_t>(
-                      Nrc::RequestCorrectlyReceivedResponsePending)};
+          return {
+              static_cast<std::uint8_t>(kNegative), service,
+              static_cast<std::uint8_t>(Nrc::RequestCorrectlyReceivedResponsePending)};
         }
         body.push_back(0x00);
         return positive(std::move(body));
@@ -442,8 +438,8 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
         return negative(service, Nrc::WrongBlockSequenceCounter);
       }
       const std::size_t count = request.size() - 2u;
-      const std::uint32_t offset = download_address_ - config_.flash_base +
-                                   download_written_;
+      const std::uint32_t offset =
+          download_address_ - config_.flash_base + download_written_;
       if (offset + count > flash_.size()) {
         return negative(service, Nrc::RequestOutOfRange);
       }
@@ -461,9 +457,9 @@ std::vector<std::uint8_t> UdsServer::handle(const std::vector<std::uint8_t>& req
         deferred_service_ = service;
         deferred_until_ns_ = now_ns;
         pending_left_ = config_.pending_responses_per_block;
-        return {kNegative, service,
-                static_cast<std::uint8_t>(
-                    Nrc::RequestCorrectlyReceivedResponsePending)};
+        return {
+            kNegative, service,
+            static_cast<std::uint8_t>(Nrc::RequestCorrectlyReceivedResponsePending)};
       }
       return positive({block});
     }

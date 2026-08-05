@@ -10,8 +10,7 @@ namespace {
 
 std::string hex_id(core::CanId id) {
   char buffer[16];
-  std::snprintf(buffer, sizeof(buffer), id.is_extended() ? "%08X" : "%03X",
-                id.value());
+  std::snprintf(buffer, sizeof(buffer), id.is_extended() ? "%08X" : "%03X", id.value());
   return buffer;
 }
 
@@ -123,15 +122,14 @@ void ViewModel::ingest(const core::FdFrame& frame) {
     recent_ns_.pop_front();
   }
 
-  auto stats_it = std::find_if(messages_.begin(), messages_.end(),
-                               [&frame](const MessageStats& m) {
-                                 return m.id == frame.id();
-                               });
+  auto stats_it =
+      std::find_if(messages_.begin(), messages_.end(),
+                   [&frame](const MessageStats& m) { return m.id == frame.id(); });
   if (stats_it == messages_.end()) {
     MessageStats fresh;
     fresh.id = frame.id();
-    fresh.name = entry.message_name.empty() ? ("id " + hex_id(frame.id()))
-                                            : entry.message_name;
+    fresh.name =
+        entry.message_name.empty() ? ("id " + hex_id(frame.id())) : entry.message_name;
     fresh.node = node;
     fresh.first_ns = frame.timestamp_ns();
     if (message != nullptr) {
@@ -147,10 +145,9 @@ void ViewModel::ingest(const core::FdFrame& frame) {
               [](const MessageStats& a, const MessageStats& b) {
                 return a.id.value() < b.id.value();
               });
-    stats_it = std::find_if(messages_.begin(), messages_.end(),
-                            [&frame](const MessageStats& m) {
-                              return m.id == frame.id();
-                            });
+    stats_it =
+        std::find_if(messages_.begin(), messages_.end(),
+                     [&frame](const MessageStats& m) { return m.id == frame.id(); });
   }
 
   if (stats_it->count > 0) {
@@ -159,8 +156,7 @@ void ViewModel::ingest(const core::FdFrame& frame) {
     // A running mean, not a stored history: the dashboard may watch a
     // bus for hours and keeping every interval would grow without bound.
     const double n = static_cast<double>(stats_it->count);
-    stats_it->mean_period_ms =
-        (stats_it->mean_period_ms * (n - 1.0) + period_ms) / n;
+    stats_it->mean_period_ms = (stats_it->mean_period_ms * (n - 1.0) + period_ms) / n;
     if (stats_it->min_period_ms == 0.0 || period_ms < stats_it->min_period_ms) {
       stats_it->min_period_ms = period_ms;
     }
@@ -168,9 +164,8 @@ void ViewModel::ingest(const core::FdFrame& frame) {
     // Jitter as peak deviation from the mean, which a scheduling
     // argument cares about; the standard deviation would hide a single late
     // frame, and a single late frame is the interesting one.
-    stats_it->jitter_ms =
-        std::max(stats_it->max_period_ms - stats_it->mean_period_ms,
-                 stats_it->mean_period_ms - stats_it->min_period_ms);
+    stats_it->jitter_ms = std::max(stats_it->max_period_ms - stats_it->mean_period_ms,
+                                   stats_it->mean_period_ms - stats_it->min_period_ms);
   }
   ++stats_it->count;
   stats_it->last_ns = frame.timestamp_ns();

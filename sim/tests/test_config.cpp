@@ -95,8 +95,7 @@ TEST(Config, SourceExpressions) {
   };
   for (const Case& c : cases) {
     auto source = build_source(c.expression);
-    ASSERT_TRUE(source.has_value())
-        << c.expression << ": " << source.error().message();
+    ASSERT_TRUE(source.has_value()) << c.expression << ": " << source.error().message();
     EXPECT_NEAR(source.value()->sample(c.at_ns), c.expected, 1e-6) << c.expression;
   }
 }

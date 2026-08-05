@@ -16,8 +16,12 @@ namespace {
 
 constexpr std::uint64_t kSeed = 0xC0FFEE1234ULL;
 
-CanId a_id() { return CanId::standard(0x7E0).value(); }
-CanId b_id() { return CanId::standard(0x7E8).value(); }
+CanId a_id() {
+  return CanId::standard(0x7E0).value();
+}
+CanId b_id() {
+  return CanId::standard(0x7E8).value();
+}
 
 /// Run one transfer to completion and return the reassembled message.
 /// `steps` bounds the loop so a bug cannot hang the suite.
@@ -76,9 +80,8 @@ TEST(IsoTpProperty, RandomSizesAgainstRandomFlowControl) {
     // The receiver dictates the block size and STmin, so those are what the
     // sender has to obey; that is the interaction worth randomising.
     receiver_config.block_size = static_cast<std::uint8_t>(bs_dist(rng));
-    static const std::uint8_t kStMin[] = {0x00, 0x01, 0x02, 0x05, 0x0A, 0x14,
-                                          0xF1, 0xF3, 0xF5, 0xF9, 0x80, 0xFF,
-                                          0x7F};
+    static const std::uint8_t kStMin[] = {0x00, 0x01, 0x02, 0x05, 0x0A, 0x14, 0xF1,
+                                          0xF3, 0xF5, 0xF9, 0x80, 0xFF, 0x7F};
     receiver_config.st_min_raw = kStMin[static_cast<std::size_t>(stmin_dist(rng))];
     receiver_config.max_receive_length = 100000;
     sender_config.pad_frames = padded(rng);
@@ -94,14 +97,13 @@ TEST(IsoTpProperty, RandomSizesAgainstRandomFlowControl) {
 
     TransferResult sender_result = TransferResult::InProgress;
     TransferResult receiver_result = TransferResult::InProgress;
-    const std::vector<std::uint8_t> got =
-        transfer(payload, sender_config, receiver_config, sender_result,
-                 receiver_result);
+    const std::vector<std::uint8_t> got = transfer(
+        payload, sender_config, receiver_config, sender_result, receiver_result);
 
     ASSERT_EQ(receiver_result, TransferResult::Ok)
-        << "size " << size << " bs " << int{receiver_config.block_size}
-        << " stmin 0x" << std::hex << int{receiver_config.st_min_raw}
-        << " -> " << to_string(receiver_result);
+        << "size " << size << " bs " << int{receiver_config.block_size} << " stmin 0x"
+        << std::hex << int{receiver_config.st_min_raw} << " -> "
+        << to_string(receiver_result);
     ASSERT_EQ(sender_result, TransferResult::Ok);
     ASSERT_EQ(got.size(), payload.size()) << "size " << size;
     ASSERT_EQ(got, payload) << "size " << size;
@@ -143,9 +145,9 @@ TEST(IsoTpProperty, SizesAroundTheEscapeBoundary) {
   receiver_config.block_size = 0;
   receiver_config.max_receive_length = 20000;
 
-  for (const std::size_t size : {std::size_t{4094}, std::size_t{4095},
-                                 std::size_t{4096}, std::size_t{4097},
-                                 std::size_t{8000}}) {
+  for (const std::size_t size :
+       {std::size_t{4094}, std::size_t{4095}, std::size_t{4096}, std::size_t{4097},
+        std::size_t{8000}}) {
     std::vector<std::uint8_t> payload(size);
     for (std::size_t i = 0; i < size; ++i) {
       payload[i] = static_cast<std::uint8_t>(i * 13u + 5u);
@@ -183,10 +185,9 @@ TEST(IsoTpProperty, BlockSizeDoesNotChangeTheResult) {
 TEST(IsoTpProperty, StMinIsRespectedForEveryEncoding) {
   Config sender_config;
   sender_config.address = Address::normal(a_id(), b_id());
-  for (const std::uint8_t raw : {std::uint8_t{0x00}, std::uint8_t{0x01},
-                              std::uint8_t{0x05}, std::uint8_t{0x0A},
-                              std::uint8_t{0xF1}, std::uint8_t{0xF5},
-                              std::uint8_t{0xF9}}) {
+  for (const std::uint8_t raw :
+       {std::uint8_t{0x00}, std::uint8_t{0x01}, std::uint8_t{0x05}, std::uint8_t{0x0A},
+        std::uint8_t{0xF1}, std::uint8_t{0xF5}, std::uint8_t{0xF9}}) {
     Config receiver_config;
     receiver_config.address = Address::normal(b_id(), a_id());
     receiver_config.block_size = 0;

@@ -36,14 +36,14 @@ class Generator {
     const std::size_t total_bits = payload_bytes * 8u;
     SignalLayout s;
     for (;;) {
-      s.bit_length = static_cast<std::uint8_t>(
-          std::uniform_int_distribution<int>(1, 64)(rng_));
+      s.bit_length =
+          static_cast<std::uint8_t>(std::uniform_int_distribution<int>(1, 64)(rng_));
       s.byte_order = std::bernoulli_distribution(0.5)(rng_) ? ByteOrder::Intel
                                                             : ByteOrder::Motorola;
       s.signedness = std::bernoulli_distribution(0.5)(rng_) ? Signedness::Signed
                                                             : Signedness::Unsigned;
-      s.start_bit = static_cast<std::uint16_t>(
-          std::uniform_int_distribution<int>(0, static_cast<int>(total_bits) - 1)(rng_));
+      s.start_bit = static_cast<std::uint16_t>(std::uniform_int_distribution<int>(
+          0, static_cast<int>(total_bits) - 1)(rng_));
       s.factor = 1.0;
       s.offset = 0.0;
       if (s.fits(payload_bytes)) {
@@ -55,10 +55,9 @@ class Generator {
   void scale(SignalLayout& s) {
     // Factors that actually occur in databases: powers of two, tenths,
     // 1/256, and the occasional awkward one. Includes negatives.
-    static constexpr double kFactors[] = {1.0,   0.5,    0.25,   0.125,
-                                          0.1,   0.01,   0.001,  1.0 / 256.0,
-                                          2.0,   10.0,   100.0,  0.0625,
-                                          -1.0,  -0.1,   -0.5,   3.0};
+    static constexpr double kFactors[] = {
+        1.0, 0.5,  0.25,  0.125,  0.1,  0.01, 0.001, 1.0 / 256.0,
+        2.0, 10.0, 100.0, 0.0625, -1.0, -0.1, -0.5,  3.0};
     s.factor = kFactors[std::uniform_int_distribution<std::size_t>(
         0, std::size(kFactors) - 1)(rng_)];
     static constexpr double kOffsets[] = {0.0, -40.0, 273.15, 1.0, -1000.0, 0.5};
@@ -73,8 +72,8 @@ class Generator {
 
   void fill(std::uint8_t* p, std::size_t n) {
     for (std::size_t i = 0; i < n; ++i) {
-      p[i] = static_cast<std::uint8_t>(
-          std::uniform_int_distribution<int>(0, 255)(rng_));
+      p[i] =
+          static_cast<std::uint8_t>(std::uniform_int_distribution<int>(0, 255)(rng_));
     }
   }
 
@@ -165,10 +164,9 @@ TEST(CodecProperty, EncodingTouchesOnlyItsOwnBits) {
     for (std::uint8_t k = 0; k < s.bit_length; ++k) {
       const std::size_t q = s.canonical_start() + k;
       const std::size_t byte = q / 8u;
-      const std::uint8_t bit =
-          s.byte_order == ByteOrder::Intel
-              ? static_cast<std::uint8_t>(q % 8u)
-              : static_cast<std::uint8_t>(7u - (q % 8u));
+      const std::uint8_t bit = s.byte_order == ByteOrder::Intel
+                                   ? static_cast<std::uint8_t>(q % 8u)
+                                   : static_cast<std::uint8_t>(7u - (q % 8u));
       owned[byte] = static_cast<std::uint8_t>(owned[byte] | (1u << bit));
     }
     for (std::size_t b = 0; b < bytes; ++b) {
@@ -212,15 +210,13 @@ TEST(CodecProperty, PhysicalRoundTripWithinQuantisationStep) {
 
     // Half a step for the rounding, plus room for the floating point error in
     // (x - offset) / factor and its inverse.
-    const double tolerance =
-        0.5 * std::fabs(s.factor) +
-        1e-9 * std::max({1.0, std::fabs(target), std::fabs(back)});
+    const double tolerance = 0.5 * std::fabs(s.factor) +
+                             1e-9 * std::max({1.0, std::fabs(target), std::fabs(back)});
     ASSERT_LE(std::fabs(back - target), tolerance)
         << "start=" << s.start_bit << " len=" << unsigned{s.bit_length}
         << " order=" << static_cast<int>(s.byte_order)
-        << " signed=" << static_cast<int>(s.signedness)
-        << " factor=" << s.factor << " offset=" << s.offset
-        << " target=" << target << " back=" << back;
+        << " signed=" << static_cast<int>(s.signedness) << " factor=" << s.factor
+        << " offset=" << s.offset << " target=" << target << " back=" << back;
     ++checked;
   }
   EXPECT_GT(checked, kCasesPerProperty / 2) << "too many cases were skipped";
@@ -305,8 +301,14 @@ TEST(CodecProperty, RoundsHalfAwayFromZero) {
   std::array<std::uint8_t, 8> payload{};
 
   const std::array<std::pair<double, double>, 8> cases = {{
-      {0.5, 1.0}, {1.5, 2.0}, {2.5, 3.0}, {-0.5, -1.0},
-      {-1.5, -2.0}, {-2.5, -3.0}, {0.4, 0.0}, {-0.4, 0.0},
+      {0.5, 1.0},
+      {1.5, 2.0},
+      {2.5, 3.0},
+      {-0.5, -1.0},
+      {-1.5, -2.0},
+      {-2.5, -3.0},
+      {0.4, 0.0},
+      {-0.4, 0.0},
   }};
   for (const auto& [in, want] : cases) {
     ASSERT_TRUE(s.encode(in, payload.data()).has_value());
@@ -321,17 +323,16 @@ TEST(CodecProperty, NonFiniteIntegerValuesAreRejected) {
   const double inf = std::numeric_limits<double>::infinity();
   EXPECT_EQ(s.encode(inf, payload.data()).error().code(),
             ErrorCode::CodecValueNotFinite);
-  EXPECT_EQ(s.encode(std::numeric_limits<double>::quiet_NaN(), payload.data())
-                .error()
-                .code(),
-            ErrorCode::CodecValueNotFinite);
+  EXPECT_EQ(
+      s.encode(std::numeric_limits<double>::quiet_NaN(), payload.data()).error().code(),
+      ErrorCode::CodecValueNotFinite);
 
   // A float signal, by contrast, can carry a NaN, so it must be accepted.
   SignalLayout f;
   f.bit_length = 32;
   f.value_type = ValueType::Float32;
-  EXPECT_TRUE(f.encode(std::numeric_limits<double>::quiet_NaN(), payload.data())
-                  .has_value());
+  EXPECT_TRUE(
+      f.encode(std::numeric_limits<double>::quiet_NaN(), payload.data()).has_value());
   EXPECT_TRUE(std::isnan(f.decode(payload.data())));
 }
 

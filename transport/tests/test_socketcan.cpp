@@ -24,7 +24,9 @@ using ms = std::chrono::milliseconds;
 
 constexpr const char* kInterface = "vcan0";
 
-bool have_vcan() { return SocketCanBus::interface_exists(kInterface); }
+bool have_vcan() {
+  return SocketCanBus::interface_exists(kInterface);
+}
 
 TEST(SocketCan, OpeningAMissingInterfaceFails) {
   SocketCanBus bus("definitely_not_a_can_interface");
@@ -117,13 +119,13 @@ TEST(SocketCan, FiltersAreInstalledInTheKernel) {
   options.receive_own_messages = true;
   SocketCanBus bus(kInterface, options);
   ASSERT_TRUE(bus.open().has_value());
-  ASSERT_TRUE(bus.set_filters({Filter::exact(CanId::standard(0x200).value())})
-                  .has_value());
+  ASSERT_TRUE(
+      bus.set_filters({Filter::exact(CanId::standard(0x200).value())}).has_value());
 
-  ASSERT_TRUE(bus.send(FdFrame::make(CanId::standard(0x100).value(), {1}).value())
-                  .has_value());
-  ASSERT_TRUE(bus.send(FdFrame::make(CanId::standard(0x200).value(), {2}).value())
-                  .has_value());
+  ASSERT_TRUE(
+      bus.send(FdFrame::make(CanId::standard(0x100).value(), {1}).value()).has_value());
+  ASSERT_TRUE(
+      bus.send(FdFrame::make(CanId::standard(0x200).value(), {2}).value()).has_value());
 
   const auto got = bus.receive(ms(500));
   ASSERT_TRUE(got.has_value());
@@ -137,8 +139,8 @@ TEST(SocketCan, ReceiveTimesOut) {
   }
   SocketCanBus bus(kInterface);
   ASSERT_TRUE(bus.open().has_value());
-  ASSERT_TRUE(bus.set_filters({Filter::exact(CanId::standard(0x7AB).value())})
-                  .has_value());
+  ASSERT_TRUE(
+      bus.set_filters({Filter::exact(CanId::standard(0x7AB).value())}).has_value());
   const auto got = bus.receive(ms(50));
   ASSERT_FALSE(got.has_value());
   EXPECT_EQ(got.error().code(), core::ErrorCode::TransportTimeout);
@@ -153,10 +155,9 @@ TEST(SocketCan, TwoSocketsSeeEachOther) {
   ASSERT_TRUE(sender.open().has_value());
   ASSERT_TRUE(receiver.open().has_value());
 
-  ASSERT_TRUE(sender.send(FdFrame::make(CanId::standard(0x321).value(),
-                                        {0xAA, 0xBB})
-                              .value())
-                  .has_value());
+  ASSERT_TRUE(
+      sender.send(FdFrame::make(CanId::standard(0x321).value(), {0xAA, 0xBB}).value())
+          .has_value());
   const auto got = receiver.receive(ms(500));
   ASSERT_TRUE(got.has_value());
   EXPECT_EQ(got.value().id().value(), 0x321u);

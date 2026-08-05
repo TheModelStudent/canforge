@@ -42,8 +42,8 @@ std::string synthetic_dbc(std::size_t signal_target) {
     for (std::size_t s = 0; s < per_message; ++s) {
       // Alternate byte orders and signedness so the parser exercises both
       // paths rather than one hot line.
-      os << " SG_ MSG" << m << "_SIG" << s << " : " << (s * 8) << "|8@"
-         << (s % 2) << (s % 3 == 0 ? '-' : '+') << " (0." << (s + 1) << ",-40)"
+      os << " SG_ MSG" << m << "_SIG" << s << " : " << (s * 8) << "|8@" << (s % 2)
+         << (s % 3 == 0 ? '-' : '+') << " (0." << (s + 1) << ",-40)"
          << " [0|255] \"unit" << s << "\" NODE" << ((m + 1) % nodes) << "\n";
     }
     os << "\n";

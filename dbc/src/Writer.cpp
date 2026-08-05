@@ -46,14 +46,20 @@ std::string quoted(const std::string& s) {
   return out;
 }
 
-const char* kDefaultNewSymbols[] = {
-    "NS_DESC_",   "CM_",          "BA_DEF_",       "BA_",
-    "VAL_",       "CAT_DEF_",     "CAT_",          "FILTER",
-    "BA_DEF_DEF_", "EV_DATA_",    "ENVVAR_DATA_",  "SGTYPE_",
-    "SGTYPE_VAL_", "BA_DEF_SGTYPE_", "BA_SGTYPE_", "SIG_TYPE_REF_",
-    "VAL_TABLE_", "SIG_GROUP_",   "SIG_VALTYPE_",  "SIGTYPE_VALTYPE_",
-    "BO_TX_BU_",  "BA_DEF_REL_",  "BA_REL_",       "BA_DEF_DEF_REL_",
-    "BU_SG_REL_", "BU_EV_REL_",   "BU_BO_REL_",    "SG_MUL_VAL_"};
+const char* kDefaultNewSymbols[] = {"NS_DESC_",     "CM_",
+                                    "BA_DEF_",      "BA_",
+                                    "VAL_",         "CAT_DEF_",
+                                    "CAT_",         "FILTER",
+                                    "BA_DEF_DEF_",  "EV_DATA_",
+                                    "ENVVAR_DATA_", "SGTYPE_",
+                                    "SGTYPE_VAL_",  "BA_DEF_SGTYPE_",
+                                    "BA_SGTYPE_",   "SIG_TYPE_REF_",
+                                    "VAL_TABLE_",   "SIG_GROUP_",
+                                    "SIG_VALTYPE_", "SIGTYPE_VALTYPE_",
+                                    "BO_TX_BU_",    "BA_DEF_REL_",
+                                    "BA_REL_",      "BA_DEF_DEF_REL_",
+                                    "BU_SG_REL_",   "BU_EV_REL_",
+                                    "BU_BO_REL_",   "SG_MUL_VAL_"};
 
 }  // namespace
 
@@ -193,8 +199,8 @@ std::string write_string(const Database& db, const WriteOptions& opt) {
   }
 
   for (const Message& m : db.messages()) {
-    os << "BO_ " << wire_id(m.id()) << ' ' << m.name() << ": "
-       << unsigned{m.dlc()} << ' '
+    os << "BO_ " << wire_id(m.id()) << ' ' << m.name() << ": " << unsigned{m.dlc()}
+       << ' '
        << (m.transmitter().empty() ? std::string(core::kNoNode) : m.transmitter())
        << '\n';
     for (const Signal& s : m.signals()) {
@@ -237,10 +243,18 @@ std::string write_string(const Database& db, const WriteOptions& opt) {
   for (const AttributeDefinition& d : db.attribute_definitions()) {
     os << "BA_DEF_ ";
     switch (d.object) {
-      case AttributeObject::Node:    os << "BU_ "; break;
-      case AttributeObject::Message: os << "BO_ "; break;
-      case AttributeObject::Signal:  os << "SG_ "; break;
-      case AttributeObject::EnvVar:  os << "EV_ "; break;
+      case AttributeObject::Node:
+        os << "BU_ ";
+        break;
+      case AttributeObject::Message:
+        os << "BO_ ";
+        break;
+      case AttributeObject::Signal:
+        os << "SG_ ";
+        break;
+      case AttributeObject::EnvVar:
+        os << "EV_ ";
+        break;
       case AttributeObject::Database:
       default:
         break;

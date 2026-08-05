@@ -30,11 +30,9 @@ const BadCase kBadCases[] = {
      "never closed"},
     {"bad_unknown_keyword.dbc", core::ErrorCode::ParseUnknownKeyword,
      "unknown section keyword"},
-    {"bad_out_of_bounds.dbc", core::ErrorCode::CodecSignalOutOfBounds,
-     "past the end"},
+    {"bad_out_of_bounds.dbc", core::ErrorCode::CodecSignalOutOfBounds, "past the end"},
     {"bad_identifier.dbc", core::ErrorCode::FrameBadIdentifier, "out of range"},
-    {"bad_missing_signedness.dbc", core::ErrorCode::ParseUnexpectedToken,
-     "'+' or '-'"},
+    {"bad_missing_signedness.dbc", core::ErrorCode::ParseUnexpectedToken, "'+' or '-'"},
     {"bad_byte_order.dbc", core::ErrorCode::ParseSemantic, "0 (Motorola)"},
 };
 
@@ -59,8 +57,7 @@ TEST(Errors, EachMalformedFileFailsWithItsOwnDiagnostic) {
 
     const std::string rendered = r.diagnostics.format(c.file);
     EXPECT_NE(rendered.find(c.text_fragment), std::string::npos)
-        << c.file << " diagnostic does not mention '" << c.text_fragment
-        << "':\n"
+        << c.file << " diagnostic does not mention '" << c.text_fragment << "':\n"
         << rendered;
     EXPECT_NE(rendered.find(c.file), std::string::npos)
         << "the diagnostic must name the file";
@@ -113,8 +110,7 @@ TEST(Errors, SeveralProblemsAreAllReported) {
       " SG_ S2 : 0|8@9+ (1,0) [0|255] \"\" A\n"
       "WOBBLE_ nonsense;\n";
   const ParseResult r = parse_string(source, "many.dbc");
-  EXPECT_GE(r.diagnostics.error_count(), 3u)
-      << r.diagnostics.format("many.dbc");
+  EXPECT_GE(r.diagnostics.error_count(), 3u) << r.diagnostics.format("many.dbc");
 }
 
 TEST(Errors, WarningsDoNotFailTheParse) {

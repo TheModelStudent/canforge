@@ -21,9 +21,9 @@ TEST(Checksum, Crc8SaeMatchesTheKnownVector) {
   // SAE J1850: poly 0x1D, init 0xFF, final XOR 0xFF. The check value for the
   // ASCII string "123456789" is 0x4B.
   const std::string check = "123456789";
-  EXPECT_EQ(crc8_sae_j1850(reinterpret_cast<const std::uint8_t*>(check.data()),
-                           check.size()),
-            0x4B);
+  EXPECT_EQ(
+      crc8_sae_j1850(reinterpret_cast<const std::uint8_t*>(check.data()), check.size()),
+      0x4B);
   EXPECT_EQ(crc8_sae_j1850(nullptr, 0), 0x00);
 }
 

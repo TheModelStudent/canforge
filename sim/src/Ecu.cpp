@@ -100,10 +100,9 @@ core::Frame Ecu::build(TxMessage& tx, Runtime& rt, const Vehicle* plant,
       // The checksum signal itself must read as zero while it is computed;
       // encode() has already zeroed it because the frame started empty.
       const std::size_t skip = c->layout().start_bit / 8u;
-      const std::uint8_t sum =
-          tx.checksum == ChecksumKind::Crc8Sae
-              ? crc8_sae_j1850(frame.data(), frame.size())
-              : xor8(frame.data(), frame.size(), skip);
+      const std::uint8_t sum = tx.checksum == ChecksumKind::Crc8Sae
+                                   ? crc8_sae_j1850(frame.data(), frame.size())
+                                   : xor8(frame.data(), frame.size(), skip);
       // Raw, for the same reason as the counter: a checksum that went through
       // a factor and offset would not be the checksum any receiver computes.
       c->layout().encode_raw(sum, frame.data());

@@ -23,20 +23,19 @@ LogReplayBus::LogReplayBus(std::vector<LogRecord> records, ReplayOptions options
   rewind();
 }
 
-Result<std::unique_ptr<LogReplayBus>> LogReplayBus::from_file(
-    const std::string& path, ReplayOptions options) {
+Result<std::unique_ptr<LogReplayBus>> LogReplayBus::from_file(const std::string& path,
+                                                              ReplayOptions options) {
   CANFORGE_TRY(auto reader, open_reader(path));
   CANFORGE_TRY(auto records, reader->read_all());
-  auto bus = std::unique_ptr<LogReplayBus>(
-      new LogReplayBus(std::move(records), options));
+  auto bus =
+      std::unique_ptr<LogReplayBus>(new LogReplayBus(std::move(records), options));
   bus->name_ = path;
   return bus;
 }
 
-std::unique_ptr<LogReplayBus> LogReplayBus::from_records(
-    std::vector<LogRecord> records, ReplayOptions options) {
-  return std::unique_ptr<LogReplayBus>(
-      new LogReplayBus(std::move(records), options));
+std::unique_ptr<LogReplayBus> LogReplayBus::from_records(std::vector<LogRecord> records,
+                                                         ReplayOptions options) {
+  return std::unique_ptr<LogReplayBus>(new LogReplayBus(std::move(records), options));
 }
 
 void LogReplayBus::rewind() noexcept {
@@ -56,7 +55,9 @@ Status LogReplayBus::open() {
   return core::ok();
 }
 
-void LogReplayBus::close() noexcept { open_ = false; }
+void LogReplayBus::close() noexcept {
+  open_ = false;
+}
 
 Status LogReplayBus::send(const FdFrame&) {
   return core::Error(core::ErrorCode::TransportUnsupported,
@@ -70,8 +71,7 @@ Status LogReplayBus::set_filters(const std::vector<Filter>& filters) {
 
 Result<FdFrame> LogReplayBus::receive(std::chrono::nanoseconds timeout) {
   if (!open_) {
-    return core::Error(core::ErrorCode::TransportNotOpen,
-                       "the replay bus is not open");
+    return core::Error(core::ErrorCode::TransportNotOpen, "the replay bus is not open");
   }
   const auto budget =
       static_cast<std::uint64_t>(timeout.count() < 0 ? 0 : timeout.count());
@@ -86,16 +86,15 @@ Result<FdFrame> LogReplayBus::receive(std::chrono::nanoseconds timeout) {
         continue;
       }
       virtual_now_ns_ = deadline;
-      return core::Error(core::ErrorCode::LogEndOfFile,
-                         "the recording is exhausted");
+      return core::Error(core::ErrorCode::LogEndOfFile, "the recording is exhausted");
     }
 
     const LogRecord& record = records_[index_];
     const std::uint64_t offset = record.frame.timestamp_ns() - first_ns_;
     // Scaling the offset, not the delay, keeps rounding error from
     // accumulating across a long capture.
-    const auto due = static_cast<std::uint64_t>(
-        static_cast<double>(offset) / options_.speed);
+    const auto due =
+        static_cast<std::uint64_t>(static_cast<double>(offset) / options_.speed);
 
     if (due > deadline) {
       virtual_now_ns_ = deadline;

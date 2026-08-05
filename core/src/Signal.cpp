@@ -92,8 +92,7 @@ void insert_intel(std::uint8_t* data, std::size_t q0, std::uint8_t len,
   if (nb == 9u) {
     const std::size_t tail = off + len - 64u;  // 1..7
     const auto tail_mask = static_cast<std::uint8_t>((1u << tail) - 1u);
-    const auto tail_bits =
-        static_cast<std::uint8_t>((v >> (len - tail)) & tail_mask);
+    const auto tail_bits = static_cast<std::uint8_t>((v >> (len - tail)) & tail_mask);
     data[first + 8u] = static_cast<std::uint8_t>(
         (data[first + 8u] & static_cast<std::uint8_t>(~tail_mask)) | tail_bits);
   }
@@ -134,15 +133,14 @@ void insert_motorola(std::uint8_t* data, std::size_t q0, std::uint8_t len,
     store_be(data + first, nb, (acc & ~window) | ((v << shift) & window));
     return;
   }
-  const std::size_t tail = off + len - 64u;  // 1..7
+  const std::size_t tail = off + len - 64u;                      // 1..7
   const auto head_bits = static_cast<std::uint8_t>(len - tail);  // 1..63
   const std::uint64_t window = bit_mask(head_bits);
   const std::uint64_t acc = load_be(data + first, 8u);
   store_be(data + first, 8u, (acc & ~window) | ((v >> tail) & window));
 
   const auto tail_mask = static_cast<std::uint8_t>(0xFFu << (8u - tail));
-  const auto tail_bits =
-      static_cast<std::uint8_t>((v << (8u - tail)) & tail_mask);
+  const auto tail_bits = static_cast<std::uint8_t>((v << (8u - tail)) & tail_mask);
   data[first + 8u] = static_cast<std::uint8_t>(
       (data[first + 8u] & static_cast<std::uint8_t>(~tail_mask)) | tail_bits);
 }
@@ -201,15 +199,14 @@ void SignalLayout::encode_raw_reference(std::uint64_t raw,
   const std::uint64_t v = raw & bit_mask(bit_length);
   for (std::uint8_t k = 0; k < bit_length; ++k) {
     const BitAddress a = address_of(q0 + k, byte_order);
-    const std::uint8_t shift =
-        byte_order == ByteOrder::Intel
-            ? k
-            : static_cast<std::uint8_t>(bit_length - 1u - k);
+    const std::uint8_t shift = byte_order == ByteOrder::Intel
+                                   ? k
+                                   : static_cast<std::uint8_t>(bit_length - 1u - k);
     const std::uint64_t bit = (v >> shift) & 1u;
     const auto mask = static_cast<std::uint8_t>(1u << a.bit);
-    data[a.byte] = static_cast<std::uint8_t>(
-        (data[a.byte] & static_cast<std::uint8_t>(~mask)) |
-        (bit != 0u ? mask : std::uint8_t{0}));
+    data[a.byte] =
+        static_cast<std::uint8_t>((data[a.byte] & static_cast<std::uint8_t>(~mask)) |
+                                  (bit != 0u ? mask : std::uint8_t{0}));
   }
 }
 
@@ -327,9 +324,7 @@ double SignalLayout::raw_minimum() const noexcept {
       return -std::numeric_limits<double>::max();
     case ValueType::Integer:
     default:
-      return signedness == Signedness::Signed
-                 ? -std::ldexp(1.0, bit_length - 1)
-                 : 0.0;
+      return signedness == Signedness::Signed ? -std::ldexp(1.0, bit_length - 1) : 0.0;
   }
 }
 
@@ -341,9 +336,8 @@ double SignalLayout::raw_maximum() const noexcept {
       return std::numeric_limits<double>::max();
     case ValueType::Integer:
     default:
-      return signedness == Signedness::Signed
-                 ? std::ldexp(1.0, bit_length - 1) - 1.0
-                 : std::ldexp(1.0, bit_length) - 1.0;
+      return signedness == Signedness::Signed ? std::ldexp(1.0, bit_length - 1) - 1.0
+                                              : std::ldexp(1.0, bit_length) - 1.0;
   }
 }
 
@@ -359,7 +353,9 @@ double SignalLayout::physical_ceiling() const noexcept {
   return std::max(a, b);
 }
 
-double SignalLayout::resolution() const noexcept { return std::fabs(factor); }
+double SignalLayout::resolution() const noexcept {
+  return std::fabs(factor);
+}
 
 Status SignalLayout::validate(std::size_t payload_bytes) const noexcept {
   if (bit_length < 1u || bit_length > 64u) {
@@ -388,8 +384,7 @@ Status SignalLayout::validate(std::size_t payload_bytes) const noexcept {
   }
   if (canonical_end() > payload_bytes * 8u) {
     return Error(ErrorCode::CodecSignalOutOfBounds,
-                 "signal extends past the end of the payload",
-                 {start_bit, bit_length});
+                 "signal extends past the end of the payload", {start_bit, bit_length});
   }
   return ok();
 }
@@ -397,13 +392,12 @@ Status SignalLayout::validate(std::size_t payload_bytes) const noexcept {
 bool operator==(const SignalLayout& a, const SignalLayout& b) noexcept {
   return a.start_bit == b.start_bit && a.bit_length == b.bit_length &&
          a.byte_order == b.byte_order && a.signedness == b.signedness &&
-         a.value_type == b.value_type && a.factor == b.factor &&
-         a.offset == b.offset && a.minimum == b.minimum && a.maximum == b.maximum;
+         a.value_type == b.value_type && a.factor == b.factor && a.offset == b.offset &&
+         a.minimum == b.minimum && a.maximum == b.maximum;
 }
 
 bool Signal::is_present_for(std::uint32_t mux) const noexcept {
-  if (mux_role_ != MultiplexRole::Multiplexed &&
-      mux_role_ != MultiplexRole::Both) {
+  if (mux_role_ != MultiplexRole::Multiplexed && mux_role_ != MultiplexRole::Both) {
     return true;
   }
   if (!mux_ranges_.empty()) {
@@ -449,11 +443,11 @@ std::string_view Signal::describe(double physical) const noexcept {
 
 bool operator==(const Signal& a, const Signal& b) {
   return a.name_ == b.name_ && a.unit_ == b.unit_ && a.comment_ == b.comment_ &&
-         a.multiplexor_name_ == b.multiplexor_name_ &&
-         a.receivers_ == b.receivers_ && a.mux_ranges_ == b.mux_ranges_ &&
+         a.multiplexor_name_ == b.multiplexor_name_ && a.receivers_ == b.receivers_ &&
+         a.mux_ranges_ == b.mux_ranges_ &&
          a.value_descriptions_ == b.value_descriptions_ &&
-         a.attributes_ == b.attributes_ && a.layout_ == b.layout_ && a.mux_role_ == b.mux_role_ &&
-         a.mux_value_ == b.mux_value_;
+         a.attributes_ == b.attributes_ && a.layout_ == b.layout_ &&
+         a.mux_role_ == b.mux_role_ && a.mux_value_ == b.mux_value_;
 }
 
 }  // namespace canforge::core

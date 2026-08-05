@@ -34,10 +34,8 @@ using Payload = std::array<std::uint8_t, 8>;
 constexpr Payload kSeq = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
 constexpr Payload kAllOnes = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 constexpr Payload kTopBit = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-constexpr Payload kLastByteTopBit = {0x00, 0x00, 0x00, 0x00,
-                                     0x00, 0x00, 0x00, 0x80};
-constexpr Payload kMaxPositive = {0x7F, 0xFF, 0xFF, 0xFF,
-                                  0xFF, 0xFF, 0xFF, 0xFF};
+constexpr Payload kLastByteTopBit = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80};
+constexpr Payload kMaxPositive = {0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 struct RawCase {
   const char* name;
@@ -299,39 +297,87 @@ const ScaledCase kScaledCases[] = {
     // raw 0x2000 = 8192 -> 8192 * 0.125 = 1024 rpm
     {"R1 J1939 SPN190 engine speed 1024 rpm",
      {0xFF, 0xFF, 0xFF, 0x00, 0x20, 0xFF, 0xFF, 0xFF},
-     24, 16, kI, Signedness::Unsigned, 0.125, 0.0, 1024.0},
+     24,
+     16,
+     kI,
+     Signedness::Unsigned,
+     0.125,
+     0.0,
+     1024.0},
     // raw 0x2EE0 = 12000 -> 1500 rpm
     {"R2 J1939 SPN190 engine speed 1500 rpm",
      {0xFF, 0xFF, 0xFF, 0xE0, 0x2E, 0xFF, 0xFF, 0xFF},
-     24, 16, kI, Signedness::Unsigned, 0.125, 0.0, 1500.0},
+     24,
+     16,
+     kI,
+     Signedness::Unsigned,
+     0.125,
+     0.0,
+     1500.0},
     // SPN 84, Wheel-Based Vehicle Speed, PGN 65265 (CCVS1): bytes 2-3,
     // 1/256 km/h per bit. raw 0x1000 = 4096 -> 16 km/h
     {"R3 J1939 SPN84 wheel speed 16 km/h",
      {0xFF, 0x00, 0x10, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-     8, 16, kI, Signedness::Unsigned, 1.0 / 256.0, 0.0, 16.0},
+     8,
+     16,
+     kI,
+     Signedness::Unsigned,
+     1.0 / 256.0,
+     0.0,
+     16.0},
     // SPN 110, Engine Coolant Temperature, PGN 65262 (ET1): byte 1,
     // 1 degC/bit with a -40 degC offset. raw 90 -> 50 degC
     {"R4 J1939 SPN110 coolant temperature 50 C",
      {0x5A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-     0, 8, kI, Signedness::Unsigned, 1.0, -40.0, 50.0},
+     0,
+     8,
+     kI,
+     Signedness::Unsigned,
+     1.0,
+     -40.0,
+     50.0},
     // SPN 91, Accelerator Pedal Position 1, PGN 61443 (EEC2): byte 2,
     // 0.4 %/bit. raw 100 -> 40 %
     {"R5 J1939 SPN91 accelerator pedal 40 %",
      {0xFF, 0x64, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-     8, 8, kI, Signedness::Unsigned, 0.4, 0.0, 40.0},
+     8,
+     8,
+     kI,
+     Signedness::Unsigned,
+     0.4,
+     0.0,
+     40.0},
     // A Motorola sensor reporting decikelvin with a Celsius offset.
     // raw 0x0BB8 = 3000 -> 3000 * 0.1 - 273.15 = 26.85
     {"R6 Motorola 16 bit with a fractional factor and negative offset",
      {0x0B, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-     7, 16, kM, Signedness::Unsigned, 0.1, -273.15, 26.85},
+     7,
+     16,
+     kM,
+     Signedness::Unsigned,
+     0.1,
+     -273.15,
+     26.85},
     // Signed Motorola: 0xFF38 as int16 = -200 -> -2.0
     {"R7 signed Motorola 16 bit, -2.0",
      {0xFF, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-     7, 16, kM, Signedness::Signed, 0.01, 0.0, -2.0},
+     7,
+     16,
+     kM,
+     Signedness::Signed,
+     0.01,
+     0.0,
+     -2.0},
     // Signed Intel steering angle: 0xFC18 as int16 = -1000 -> -100.0 deg
     {"R8 signed Intel 16 bit, -100.0 degrees",
      {0x18, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-     0, 16, kI, Signedness::Signed, 0.1, 0.0, -100.0},
+     0,
+     16,
+     kI,
+     Signedness::Signed,
+     0.1,
+     0.0,
+     -100.0},
 };
 
 TEST(GoldenScaled, PublishedParameterDefinitions) {
@@ -364,26 +410,62 @@ const FloatCase kFloatCases[] = {
     // 1.0f is 0x3F800000; little endian on the wire is 00 00 80 3F
     {"F1 float32 Intel 1.0",
      {0x00, 0x00, 0x80, 0x3F, 0, 0, 0, 0},
-     0, 32, kI, ValueType::Float32, 1.0, 0.0, 1.0},
+     0,
+     32,
+     kI,
+     ValueType::Float32,
+     1.0,
+     0.0,
+     1.0},
     // -0.5f is 0xBF000000
     {"F2 float32 Intel -0.5",
      {0x00, 0x00, 0x00, 0xBF, 0, 0, 0, 0},
-     0, 32, kI, ValueType::Float32, 1.0, 0.0, -0.5},
+     0,
+     32,
+     kI,
+     ValueType::Float32,
+     1.0,
+     0.0,
+     -0.5},
     // the same 1.0f big endian: 3F 80 00 00
     {"F3 float32 Motorola 1.0",
      {0x3F, 0x80, 0x00, 0x00, 0, 0, 0, 0},
-     7, 32, kM, ValueType::Float32, 1.0, 0.0, 1.0},
+     7,
+     32,
+     kM,
+     ValueType::Float32,
+     1.0,
+     0.0,
+     1.0},
     // 1.0 double is 0x3FF0000000000000
     {"F4 float64 Intel 1.0",
      {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F},
-     0, 64, kI, ValueType::Float64, 1.0, 0.0, 1.0},
+     0,
+     64,
+     kI,
+     ValueType::Float64,
+     1.0,
+     0.0,
+     1.0},
     {"F5 float64 Motorola 1.0",
      {0x3F, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-     7, 64, kM, ValueType::Float64, 1.0, 0.0, 1.0},
+     7,
+     64,
+     kM,
+     ValueType::Float64,
+     1.0,
+     0.0,
+     1.0},
     // 3.0f is 0x40400000; factor and offset still apply on top: 3*2+1 = 7
     {"F6 float32 with factor and offset",
      {0x00, 0x00, 0x40, 0x40, 0, 0, 0, 0},
-     0, 32, kI, ValueType::Float32, 2.0, 1.0, 7.0},
+     0,
+     32,
+     kI,
+     ValueType::Float32,
+     2.0,
+     1.0,
+     7.0},
 };
 
 TEST(GoldenFloat, IeeeSignals) {
@@ -449,8 +531,8 @@ TEST(GoldenWide, SixtyFourBitSignalSpanningNineBytes) {
 
 TEST(GoldenWide, NineByteSpanWritesBackCleanly) {
   for (const ByteOrder order : {kI, kM}) {
-    for (std::uint16_t start : {std::uint16_t{1}, std::uint16_t{3},
-                                std::uint16_t{4}, std::uint16_t{6}}) {
+    for (std::uint16_t start :
+         {std::uint16_t{1}, std::uint16_t{3}, std::uint16_t{4}, std::uint16_t{6}}) {
       SignalLayout s;
       s.start_bit = start;
       s.bit_length = 64;

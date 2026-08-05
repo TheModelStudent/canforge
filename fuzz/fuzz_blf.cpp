@@ -28,8 +28,8 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
   }
   std::fclose(file);
 
-  auto reader = canforge::transport::open_reader(path,
-                                                 canforge::transport::LogFormat::Blf);
+  auto reader =
+      canforge::transport::open_reader(path, canforge::transport::LogFormat::Blf);
   if (reader) {
     // read_all stops at the first hard error, so a bounded loop is used to
     // make sure a corrupt file cannot spin forever.

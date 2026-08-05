@@ -74,13 +74,13 @@ inline constexpr std::uint32_t kClassicMaxLength = 4095;
 enum class TransferResult : std::uint8_t {
   InProgress,
   Ok,
-  TimeoutA,       ///< N_As / N_Ar
-  TimeoutBs,      ///< N_Bs: no Flow Control arrived
-  TimeoutCr,      ///< N_Cr: no Consecutive Frame arrived
-  WrongSequence,  ///< N_WRONG_SN
-  UnexpectedPdu,  ///< N_UNEXP_PDU
-  BufferOverflow, ///< N_BUFFER_OVFLW: the receiver said it cannot hold this
-  WaitOverrun,    ///< N_WFT_OVRN: too many consecutive FC.WAIT frames
+  TimeoutA,        ///< N_As / N_Ar
+  TimeoutBs,       ///< N_Bs: no Flow Control arrived
+  TimeoutCr,       ///< N_Cr: no Consecutive Frame arrived
+  WrongSequence,   ///< N_WRONG_SN
+  UnexpectedPdu,   ///< N_UNEXP_PDU
+  BufferOverflow,  ///< N_BUFFER_OVFLW: the receiver said it cannot hold this
+  WaitOverrun,     ///< N_WFT_OVRN: too many consecutive FC.WAIT frames
   InvalidPdu,
   Aborted,
 };
@@ -95,8 +95,8 @@ enum class AddressingMode : std::uint8_t {
 
 struct Address {
   AddressingMode mode = AddressingMode::Normal;
-  CanId tx_id;               ///< Identifier this side transmits on.
-  CanId rx_id;               ///< Identifier this side listens on.
+  CanId tx_id;                    ///< Identifier this side transmits on.
+  CanId rx_id;                    ///< Identifier this side listens on.
   std::uint8_t tx_extension = 0;  ///< Extended addressing only.
   std::uint8_t rx_extension = 0;
 
@@ -214,12 +214,12 @@ class Sender {
   TransferResult result_ = TransferResult::InProgress;
   std::size_t offset_ = 0;
   std::uint8_t sequence_ = 0;
-  std::uint8_t block_size_ = 0;      ///< From the peer's FC.
-  std::uint64_t st_min_ns_ = 0;      ///< From the peer's FC.
+  std::uint8_t block_size_ = 0;  ///< From the peer's FC.
+  std::uint64_t st_min_ns_ = 0;  ///< From the peer's FC.
   std::uint8_t frames_in_block_ = 0;
   std::uint8_t wait_count_ = 0;
-  std::uint64_t deadline_ns_ = 0;    ///< N_Bs while waiting for FC.
-  std::uint64_t next_send_ns_ = 0;   ///< STmin / N_Cs pacing.
+  std::uint64_t deadline_ns_ = 0;   ///< N_Bs while waiting for FC.
+  std::uint64_t next_send_ns_ = 0;  ///< STmin / N_Cs pacing.
 };
 
 class Receiver {
@@ -255,8 +255,8 @@ class Receiver {
   std::size_t expected_ = 0;
   std::uint8_t sequence_ = 0;
   std::uint8_t frames_in_block_ = 0;
-  std::uint64_t deadline_ns_ = 0;    ///< N_Cr while waiting for a CF.
-  std::uint64_t fc_due_ns_ = 0;      ///< N_Br pacing for the Flow Control.
+  std::uint64_t deadline_ns_ = 0;  ///< N_Cr while waiting for a CF.
+  std::uint64_t fc_due_ns_ = 0;    ///< N_Br pacing for the Flow Control.
   FlowStatus pending_status_ = FlowStatus::ContinueToSend;
 };
 

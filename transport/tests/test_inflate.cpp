@@ -30,8 +30,7 @@ TEST(Inflate, RoundTripsEveryBlockType) {
     ASSERT_FALSE(compressed.empty()) << name;
 
     auto out = inflate_zlib(compressed.data(), compressed.size(), expected.size());
-    ASSERT_TRUE(out.has_value())
-        << name << ": " << out.error().message();
+    ASSERT_TRUE(out.has_value()) << name << ": " << out.error().message();
     EXPECT_EQ(out.value(), expected) << name;
   }
 }
@@ -78,8 +77,7 @@ TEST(Inflate, RejectsAnEmptyInput) {
 TEST(Inflate, Adler32MatchesTheKnownVector) {
   // RFC 1950's worked example.
   const std::string data = "Wikipedia";
-  EXPECT_EQ(adler32(reinterpret_cast<const std::uint8_t*>(data.data()),
-                    data.size()),
+  EXPECT_EQ(adler32(reinterpret_cast<const std::uint8_t*>(data.data()), data.size()),
             0x11E60398u);
   EXPECT_EQ(adler32(nullptr, 0), 1u);
 }

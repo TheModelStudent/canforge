@@ -119,8 +119,8 @@ int main(int argc, char** argv) {
   std::fprintf(stderr,
                "soak: %llu frames, rss start %zu KiB, after warm-up %zu KiB, "
                "end %zu KiB, peak %zu KiB\n",
-               static_cast<unsigned long long>(frames), start_kib, warm_kib,
-               end_kib, peak_kib);
+               static_cast<unsigned long long>(frames), start_kib, warm_kib, end_kib,
+               peak_kib);
 
   if (warm_kib == 0 || end_kib == 0) {
     std::fprintf(stderr, "soak: no resident set reading available; loop only\n");
@@ -130,8 +130,7 @@ int main(int argc, char** argv) {
   // shows up as tens of megabytes within a minute at this frame rate.
   const std::size_t allowed = 8u * 1024u;
   if (end_kib > warm_kib + allowed) {
-    std::fprintf(stderr,
-                 "soak: FAILED, resident set grew by %zu KiB after warm-up\n",
+    std::fprintf(stderr, "soak: FAILED, resident set grew by %zu KiB after warm-up\n",
                  end_kib - warm_kib);
     return 1;
   }

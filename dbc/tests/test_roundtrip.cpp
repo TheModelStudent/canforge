@@ -21,23 +21,24 @@ std::string data_path(const char* name) {
   return std::string(CANFORGE_DBC_TEST_DATA) + "/" + name;
 }
 
-const char* const kCorpus[] = {"powertrain.dbc", "multiplexed.dbc",
-                               "valuetables.dbc", "floats.dbc",
-                               "attributes.dbc", "quirks.dbc", "bom.dbc"};
+const char* const kCorpus[] = {"powertrain.dbc", "multiplexed.dbc", "valuetables.dbc",
+                               "floats.dbc",     "attributes.dbc",  "quirks.dbc",
+                               "bom.dbc"};
 
 TEST(RoundTrip, ParseWriteParseIsIdentical) {
   for (const char* name : kCorpus) {
     auto first = parse_file(data_path(name));
     ASSERT_TRUE(first.has_value()) << name;
     ParseResult a = std::move(first).value();
-    ASSERT_FALSE(a.diagnostics.has_errors())
-        << name << '\n' << a.diagnostics.format(name);
+    ASSERT_FALSE(a.diagnostics.has_errors()) << name << '\n'
+                                             << a.diagnostics.format(name);
 
     const std::string text = write_string(a.database);
     ParseResult b = parse_string(text, std::string(name) + " (rewritten)");
     ASSERT_FALSE(b.diagnostics.has_errors())
-        << "the writer produced something the parser rejects, for " << name
-        << '\n' << b.diagnostics.format(name) << "\n---- output ----\n" << text;
+        << "the writer produced something the parser rejects, for " << name << '\n'
+        << b.diagnostics.format(name) << "\n---- output ----\n"
+        << text;
 
     EXPECT_EQ(a.database, b.database) << "round trip lost information for " << name;
   }
@@ -70,9 +71,11 @@ TEST(RoundTrip, CrlfOutputParsesBackTheSame) {
 TEST(RoundTrip, NumbersSurviveExactly) {
   // A factor of 0.1 is not representable in binary; the writer must emit a
   // decimal string that reads back as the same double, not a rounded one.
-  const std::vector<double> awkward = {0.1,   0.125,  1.0 / 256.0, 1e-9,
-                                       -0.05, 3.3333333333333335, 1e15,
-                                       2.220446049250313e-16, 0.0, -0.0};
+  const std::vector<double> awkward = {0.1,         0.125,
+                                       1.0 / 256.0, 1e-9,
+                                       -0.05,       3.3333333333333335,
+                                       1e15,        2.220446049250313e-16,
+                                       0.0,         -0.0};
   for (const double v : awkward) {
     const std::string text = format_number(v);
     EXPECT_DOUBLE_EQ(std::strtod(text.c_str(), nullptr), v)
@@ -125,8 +128,7 @@ TEST(RoundTrip, MultiplexIndicatorsAreRewrittenCorrectly) {
 TEST(RoundTrip, EnumAttributesUseNamesInDefaultsAndIndicesInValues) {
   ParseResult a = std::move(parse_file(data_path("attributes.dbc"))).value();
   const std::string text = write_string(a.database);
-  EXPECT_NE(text.find("BA_DEF_DEF_ \"DbEnum\" \"Beta\";"), std::string::npos)
-      << text;
+  EXPECT_NE(text.find("BA_DEF_DEF_ \"DbEnum\" \"Beta\";"), std::string::npos) << text;
   EXPECT_NE(text.find("BA_ \"DbEnum\" 2;"), std::string::npos) << text;
 }
 
@@ -135,8 +137,7 @@ TEST(RoundTrip, FloatValueTypesAreReEmitted) {
   const std::string text = write_string(a.database);
   EXPECT_NE(text.find("SIG_VALTYPE_ 300 PressureIntel : 1;"), std::string::npos)
       << text;
-  EXPECT_NE(text.find("SIG_VALTYPE_ 301 PreciseValue : 2;"), std::string::npos)
-      << text;
+  EXPECT_NE(text.find("SIG_VALTYPE_ 301 PreciseValue : 2;"), std::string::npos) << text;
 }
 
 TEST(RoundTrip, EscapesSurviveTheTrip) {

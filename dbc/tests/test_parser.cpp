@@ -29,8 +29,8 @@ ParseResult load_ok(const char* name) {
   auto parsed = parse_file(data_path(name));
   EXPECT_TRUE(parsed.has_value()) << "cannot read " << name;
   ParseResult r = std::move(parsed).value();
-  EXPECT_FALSE(r.diagnostics.has_errors())
-      << name << " should parse cleanly:\n" << r.diagnostics.format(name);
+  EXPECT_FALSE(r.diagnostics.has_errors()) << name << " should parse cleanly:\n"
+                                           << r.diagnostics.format(name);
   return r;
 }
 
@@ -39,8 +39,7 @@ TEST(Parser, PowertrainStructure) {
   const auto& db = r.database;
 
   EXPECT_EQ(db.version(), "1.0 canforge powertrain example");
-  EXPECT_EQ(db.comment(),
-            "Small powertrain example database for canforge tests.");
+  EXPECT_EQ(db.comment(), "Small powertrain example database for canforge tests.");
   ASSERT_EQ(db.nodes().size(), 4u);
   EXPECT_EQ(db.nodes()[0].name, "ECM");
   EXPECT_EQ(db.nodes()[0].comment, "Engine control module");
@@ -172,8 +171,7 @@ TEST(Parser, SimpleMultiplexing) {
   EXPECT_TRUE(m->is_multiplexed());
   ASSERT_NE(m->multiplexor(), nullptr);
   EXPECT_EQ(m->multiplexor()->name(), "ResponseKind");
-  EXPECT_EQ(m->find_signal("VoltageA")->multiplex_role(),
-            MultiplexRole::Multiplexed);
+  EXPECT_EQ(m->find_signal("VoltageA")->multiplex_role(), MultiplexRole::Multiplexed);
   EXPECT_EQ(m->find_signal("VoltageA")->multiplex_value(), 1u);
 }
 
@@ -191,27 +189,25 @@ TEST(Parser, MultiplexedDecodeReturnsOnlyTheActiveSignals) {
     for (const auto& d : decoded) {
       names.emplace_back(d.name());
     }
-    EXPECT_EQ(names, (std::vector<std::string>{"ResponseKind", "VoltageA",
-                                               "VoltageB", "AlwaysPresent"}));
-    EXPECT_DOUBLE_EQ(decoded[1].value, 1.0);   // 0x03E8 = 1000 * 0.001
-    EXPECT_DOUBLE_EQ(decoded[2].value, 2.0);   // 0x07D0 = 2000 * 0.001
+    EXPECT_EQ(names, (std::vector<std::string>{"ResponseKind", "VoltageA", "VoltageB",
+                                               "AlwaysPresent"}));
+    EXPECT_DOUBLE_EQ(decoded[1].value, 1.0);  // 0x03E8 = 1000 * 0.001
+    EXPECT_DOUBLE_EQ(decoded[2].value, 2.0);  // 0x07D0 = 2000 * 0.001
     EXPECT_DOUBLE_EQ(decoded[3].value, 66.0);
   }
   // Multiplexor = 2: the three temperatures instead.
   {
-    const Frame f =
-        Frame::make(m->id(), {0x02, 0x28, 0x50, 0x78, 0, 0, 0, 0}).value();
+    const Frame f = Frame::make(m->id(), {0x02, 0x28, 0x50, 0x78, 0, 0, 0, 0}).value();
     const auto decoded = m->decode(f).value();
     std::vector<std::string> names;
     for (const auto& d : decoded) {
       names.emplace_back(d.name());
     }
     EXPECT_EQ(names,
-              (std::vector<std::string>{"ResponseKind", "TemperatureA",
-                                        "TemperatureB", "TemperatureC",
-                                        "AlwaysPresent"}));
-    EXPECT_DOUBLE_EQ(decoded[1].value, 0.0);    // 0x28 = 40, offset -40
-    EXPECT_DOUBLE_EQ(decoded[2].value, 40.0);   // 0x50 = 80
+              (std::vector<std::string>{"ResponseKind", "TemperatureA", "TemperatureB",
+                                        "TemperatureC", "AlwaysPresent"}));
+    EXPECT_DOUBLE_EQ(decoded[1].value, 0.0);   // 0x28 = 40, offset -40
+    EXPECT_DOUBLE_EQ(decoded[2].value, 40.0);  // 0x50 = 80
   }
   // Multiplexor = 7: nothing is selected, only the plain signal remains.
   {
@@ -236,8 +232,7 @@ TEST(Parser, ExtendedMultiplexingRanges) {
   EXPECT_EQ(high->multiplexor_name(), "Selector");
 
   const auto active_names = [&](std::uint8_t selector) {
-    const Frame f =
-        Frame::make(m->id(), {selector, 0x11, 0x22, 0, 0, 0, 0, 0}).value();
+    const Frame f = Frame::make(m->id(), {selector, 0x11, 0x22, 0, 0, 0, 0, 0}).value();
     // The Result is bound to a named local first: in C++17 a temporary in the
     // range expression of a range-for is destroyed before the loop body runs,
     // so iterating m->decode(f).value() directly would dangle.
@@ -288,12 +283,10 @@ TEST(Parser, NestedMultiplexing) {
   EXPECT_EQ(active_names(1, 4),
             (std::vector<std::string>{"OuterMux", "InnerMux", "LeafOne"}));
   // inner 7 selects neither leaf.
-  EXPECT_EQ(active_names(1, 7),
-            (std::vector<std::string>{"OuterMux", "InnerMux"}));
+  EXPECT_EQ(active_names(1, 7), (std::vector<std::string>{"OuterMux", "InnerMux"}));
   // Outer 2 does not select InnerMux at all, so no leaf can be present even
   // though the inner nibble still reads as a valid selector.
-  EXPECT_EQ(active_names(2, 0),
-            (std::vector<std::string>{"OuterMux", "OuterOnly"}));
+  EXPECT_EQ(active_names(2, 0), (std::vector<std::string>{"OuterMux", "OuterOnly"}));
   // Outer 0 selects nothing.
   EXPECT_EQ(active_names(0, 0), (std::vector<std::string>{"OuterMux"}));
 }
@@ -320,8 +313,7 @@ TEST(Parser, ValueTables) {
 
 TEST(Parser, ValueTableOnAScaledSignalKeysOnTheRawValue) {
   const auto r = load_ok("valuetables.dbc");
-  const Signal* s =
-      r.database.find_message("BodyStatus")->find_signal("ScaledEnum");
+  const Signal* s = r.database.find_message("BodyStatus")->find_signal("ScaledEnum");
   ASSERT_NE(s, nullptr);
   EXPECT_DOUBLE_EQ(s->layout().factor, 2.0);
   EXPECT_EQ(s->describe(4.0), "TwoRaw") << "physical 4 is raw 2";
@@ -330,8 +322,7 @@ TEST(Parser, ValueTableOnAScaledSignalKeysOnTheRawValue) {
 
 TEST(Parser, NegativeValueTableEntries) {
   const auto r = load_ok("valuetables.dbc");
-  const Signal* s =
-      r.database.find_message("BodyStatus")->find_signal("SignedEnum");
+  const Signal* s = r.database.find_message("BodyStatus")->find_signal("SignedEnum");
   ASSERT_NE(s, nullptr);
   EXPECT_EQ(s->describe(-1.0), "MinusOne");
   EXPECT_EQ(s->describe(-128.0), "Floor");
@@ -357,12 +348,11 @@ TEST(Parser, FloatAndDoubleSignals) {
 
   // 1.0f is 0x3F800000, little endian on the wire.
   const Frame f =
-      Frame::make(pair->id(), {0x00, 0x00, 0x80, 0x3F, 0x3F, 0x80, 0x00, 0x00})
-          .value();
+      Frame::make(pair->id(), {0x00, 0x00, 0x80, 0x3F, 0x3F, 0x80, 0x00, 0x00}).value();
   EXPECT_FLOAT_EQ(static_cast<float>(pair->find_signal("PressureIntel")->decode(f)),
                   1.0F);
-  EXPECT_FLOAT_EQ(
-      static_cast<float>(pair->find_signal("PressureMotorola")->decode(f)), 1.0F);
+  EXPECT_FLOAT_EQ(static_cast<float>(pair->find_signal("PressureMotorola")->decode(f)),
+                  1.0F);
 }
 
 TEST(Parser, ScaledFloatAppliesFactorAndOffset) {
@@ -371,8 +361,7 @@ TEST(Parser, ScaledFloatAppliesFactorAndOffset) {
   ASSERT_NE(m, nullptr);
   const Signal* s = m->find_signal("ScaledIeee");
   // 3.0f = 0x40400000 -> physical 3*2 + 1 = 7
-  const Frame f =
-      Frame::make(m->id(), {0x00, 0x00, 0x40, 0x40, 0, 0, 0, 0}).value();
+  const Frame f = Frame::make(m->id(), {0x00, 0x00, 0x40, 0x40, 0, 0, 0, 0}).value();
   EXPECT_DOUBLE_EQ(s->decode(f), 7.0);
 
   auto out = Frame::make_empty(m->id(), 8).value();
@@ -426,12 +415,10 @@ TEST(Parser, EveryAttributeType) {
   EXPECT_DOUBLE_EQ(m->attributes().at("MsgFloat").number(), 12.5);
   EXPECT_EQ(m->attributes().at("VFrameFormat").text(), "StandardCAN");
   EXPECT_DOUBLE_EQ(
-      m->find_signal("AttrSignal")->attributes().at("GenSigStartValue").number(),
-      17.5);
+      m->find_signal("AttrSignal")->attributes().at("GenSigStartValue").number(), 17.5);
   EXPECT_EQ(m->find_signal("AttrSignal")->attributes().at("SigString").text(),
             "signal attribute");
-  EXPECT_EQ(m->find_signal("OtherSignal")->attributes().at("SigEnum").text(),
-            "Cooked");
+  EXPECT_EQ(m->find_signal("OtherSignal")->attributes().at("SigEnum").text(), "Cooked");
 }
 
 TEST(Parser, QuirkyFileParses) {

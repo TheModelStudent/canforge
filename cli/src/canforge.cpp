@@ -7,11 +7,11 @@
 // not having any.
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <atomic>
 #include <fstream>
 #include <mutex>
 #include <sstream>
@@ -40,7 +40,6 @@ using canforge::transport::BusTiming;
 using canforge::transport::IBus;
 
 constexpr std::uint64_t kMs = 1000000ULL;
-constexpr std::uint64_t kS = 1000000000ULL;
 
 struct Args {
   std::string config;
@@ -48,7 +47,7 @@ struct Args {
   std::string database;
   std::string log;
   std::string download;
-  double duration_s = 0.0;   ///< 0 means run until interrupted.
+  double duration_s = 0.0;  ///< 0 means run until interrupted.
   double speed = 1.0;
   bool virtual_bus = false;
   bool quiet = false;
@@ -239,17 +238,15 @@ int command_sim(const Args& args) {
     log = std::move(writer).value();
   }
 
-  std::fprintf(stderr,
-               "canforge sim: %zu nodes on %s at %u bit/s%s\n",
+  std::fprintf(stderr, "canforge sim: %zu nodes on %s at %u bit/s%s\n",
                simulator.value()->nodes().size(),
                args.virtual_bus ? "the virtual bus" : args.bus.c_str(),
                timing.nominal_bitrate,
                args.duration_s > 0.0 ? "" : " (ctrl-c to stop)");
 
-  const std::uint64_t limit_ns =
-      args.duration_s > 0.0
-          ? static_cast<std::uint64_t>(args.duration_s * 1e9)
-          : ~std::uint64_t{0};
+  const std::uint64_t limit_ns = args.duration_s > 0.0
+                                     ? static_cast<std::uint64_t>(args.duration_s * 1e9)
+                                     : ~std::uint64_t{0};
   const auto started = std::chrono::steady_clock::now();
   std::uint64_t now_ns = 0;
   std::uint64_t sent = 0;
@@ -271,9 +268,8 @@ int command_sim(const Args& args) {
       }
       if (!args.quiet) {
         const auto* message = database.find_message(frame.id());
-        std::printf("%10.6f  %03X  [%zu] %s\n",
-                    static_cast<double>(now_ns) / 1e9, frame.id().value(),
-                    frame.size(),
+        std::printf("%10.6f  %03X  [%zu] %s\n", static_cast<double>(now_ns) / 1e9,
+                    frame.id().value(), frame.size(),
                     message != nullptr ? message->name().c_str() : "?");
       }
     }
@@ -293,10 +289,9 @@ int command_sim(const Args& args) {
   if (log) {
     static_cast<void>(log->finish());
   }
-  std::fprintf(stderr,
-               "canforge sim: %llu frames in %.1f s, bus load %.1f%%\n",
-               static_cast<unsigned long long>(sent),
-               static_cast<double>(now_ns) / 1e9, bus->bus_load() * 100.0);
+  std::fprintf(stderr, "canforge sim: %llu frames in %.1f s, bus load %.1f%%\n",
+               static_cast<unsigned long long>(sent), static_cast<double>(now_ns) / 1e9,
+               bus->bus_load() * 100.0);
   return 0;
 }
 
@@ -379,8 +374,7 @@ int command_uds(const Args& args) {
     return 1;
   }
   for (const auto& dtc : Client::parse_dtc_list(client.response().data)) {
-    std::printf("%-34s %s  %s\n", "  DTC",
-                canforge::uds::format_dtc(dtc.code).c_str(),
+    std::printf("%-34s %s  %s\n", "  DTC", canforge::uds::format_dtc(dtc.code).c_str(),
                 canforge::uds::describe_dtc_status(dtc.status).c_str());
   }
 
@@ -394,10 +388,9 @@ int command_uds(const Args& args) {
     std::fprintf(stderr, "canforge uds: cannot read %s\n", args.download.c_str());
     return 1;
   }
-  const std::vector<std::uint8_t> firmware(
-      (std::istreambuf_iterator<char>(image)), std::istreambuf_iterator<char>());
-  std::printf("\nflashing %zu bytes from %s\n", firmware.size(),
-              args.download.c_str());
+  const std::vector<std::uint8_t> firmware((std::istreambuf_iterator<char>(image)),
+                                           std::istreambuf_iterator<char>());
+  std::printf("\nflashing %zu bytes from %s\n", firmware.size(), args.download.c_str());
 
   static_cast<void>(client.diagnostic_session_control(SessionType::Programming, now));
   if (!step("DiagnosticSessionControl prog")) {
@@ -413,13 +406,13 @@ int command_uds(const Args& args) {
   }
   const std::uint32_t key =
       canforge::sim::toy_key_from_seed(seed, server_config.security_secret);
-  static_cast<void>(client.security_access_send_key(
-      0x02,
-      {static_cast<std::uint8_t>((key >> 24u) & 0xFFu),
-       static_cast<std::uint8_t>((key >> 16u) & 0xFFu),
-       static_cast<std::uint8_t>((key >> 8u) & 0xFFu),
-       static_cast<std::uint8_t>(key & 0xFFu)},
-      now));
+  static_cast<void>(
+      client.security_access_send_key(0x02,
+                                      {static_cast<std::uint8_t>((key >> 24u) & 0xFFu),
+                                       static_cast<std::uint8_t>((key >> 16u) & 0xFFu),
+                                       static_cast<std::uint8_t>((key >> 8u) & 0xFFu),
+                                       static_cast<std::uint8_t>(key & 0xFFu)},
+                                      now));
   if (!step("SecurityAccess sendKey")) {
     return 1;
   }
@@ -510,9 +503,8 @@ int command_dump(const Args& args) {
   for (const auto& record : records.value()) {
     std::printf("%14.6f  %s  %0*X  [%zu]",
                 static_cast<double>(record.frame.timestamp_ns()) / 1e9,
-                record.channel.c_str(),
-                record.frame.id().is_extended() ? 8 : 3, record.frame.id().value(),
-                record.frame.size());
+                record.channel.c_str(), record.frame.id().is_extended() ? 8 : 3,
+                record.frame.id().value(), record.frame.size());
     if (have_database) {
       const auto* message = database.find_message(record.frame.id());
       if (message != nullptr) {
@@ -553,20 +545,17 @@ int command_info(const Args& args) {
   std::printf("signals   %zu\n\n", signals);
 
   for (const auto& message : database.messages()) {
-    std::printf("%0*X  %-24s %2u bytes  %s\n",
-                message.id().is_extended() ? 8 : 3, message.id().value(),
-                message.name().c_str(), unsigned{message.dlc()},
+    std::printf("%0*X  %-24s %2u bytes  %s\n", message.id().is_extended() ? 8 : 3,
+                message.id().value(), message.name().c_str(), unsigned{message.dlc()},
                 message.transmitter().c_str());
     for (const auto& signal : message.signals()) {
-      std::printf("    %-26s %3u|%-2u@%d%c  (%g,%g) [%g|%g] %s\n",
-                  signal.name().c_str(), signal.layout().start_bit,
-                  unsigned{signal.layout().bit_length},
-                  signal.layout().byte_order == canforge::core::ByteOrder::Intel ? 1 : 0,
-                  signal.layout().signedness == canforge::core::Signedness::Signed ? '-'
-                                                                                   : '+',
-                  signal.layout().factor, signal.layout().offset,
-                  signal.layout().minimum, signal.layout().maximum,
-                  signal.unit().c_str());
+      std::printf(
+          "    %-26s %3u|%-2u@%d%c  (%g,%g) [%g|%g] %s\n", signal.name().c_str(),
+          signal.layout().start_bit, unsigned{signal.layout().bit_length},
+          signal.layout().byte_order == canforge::core::ByteOrder::Intel ? 1 : 0,
+          signal.layout().signedness == canforge::core::Signedness::Signed ? '-' : '+',
+          signal.layout().factor, signal.layout().offset, signal.layout().minimum,
+          signal.layout().maximum, signal.unit().c_str());
     }
   }
   const auto problems = database.lint();

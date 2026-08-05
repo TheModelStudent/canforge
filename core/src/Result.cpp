@@ -8,6 +8,7 @@ namespace canforge::core {
 
 const char* to_string(ErrorCode code) noexcept {
   switch (code) {
+      // clang-format off
     case ErrorCode::Ok:                      return "ok";
     case ErrorCode::InvalidArgument:         return "invalid argument";
     case ErrorCode::OutOfRange:              return "out of range";
@@ -30,7 +31,10 @@ const char* to_string(ErrorCode code) noexcept {
     case ErrorCode::ParseBadNumber:          return "malformed number";
     case ErrorCode::ParseUnterminatedString: return "unterminated string";
     case ErrorCode::ParseUnknownKeyword:     return "unknown keyword";
-    case ErrorCode::ParseDuplicateDefinition:return "duplicate definition";
+    // clang-format on
+    case ErrorCode::ParseDuplicateDefinition:
+      return "duplicate definition";
+      // clang-format off
     case ErrorCode::ParseUndefinedReference: return "reference to something undefined";
     case ErrorCode::ParseSemantic:           return "semantic error";
     case ErrorCode::TransportOpenFailed:     return "could not open the bus";
@@ -43,6 +47,7 @@ const char* to_string(ErrorCode code) noexcept {
     case ErrorCode::LogBadFormat:            return "malformed log file";
     case ErrorCode::LogUnsupportedVersion:   return "unsupported log version";
     case ErrorCode::LogEndOfFile:            return "end of log";
+      // clang-format on
   }
   return "unknown error";
 }

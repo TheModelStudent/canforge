@@ -209,7 +209,8 @@ TEST(Blf, HandlesBothPublishedContainerLayouts) {
   // Vector's SDK puts the compressed payload at offset 32 from the object
   // start; python-can reads it at 28. Both fixtures must read identically.
   auto sdk = open_reader(data_path("sample.blf")).value()->read_all().value();
-  auto other = open_reader(data_path("sample_pythoncan.blf")).value()->read_all().value();
+  auto other =
+      open_reader(data_path("sample_pythoncan.blf")).value()->read_all().value();
   ASSERT_EQ(sdk.size(), other.size());
   for (std::size_t i = 0; i < sdk.size(); ++i) {
     EXPECT_EQ(sdk[i].frame, other[i].frame) << "record " << i;
@@ -217,8 +218,7 @@ TEST(Blf, HandlesBothPublishedContainerLayouts) {
 }
 
 TEST(Blf, HandlesAnUncompressedContainer) {
-  auto records =
-      open_reader(data_path("sample_uncompressed.blf")).value()->read_all();
+  auto records = open_reader(data_path("sample_uncompressed.blf")).value()->read_all();
   ASSERT_TRUE(records.has_value()) << records.error().message();
   EXPECT_EQ(records.value().size(), 5u);
 }
@@ -350,8 +350,8 @@ TEST(Replay, RewindAndSeek) {
 TEST(Replay, FiltersApply) {
   auto bus = LogReplayBus::from_records(synthetic_records());
   ASSERT_TRUE(bus->open().has_value());
-  ASSERT_TRUE(bus->set_filters({Filter::exact(CanId::standard(0x103).value())})
-                  .has_value());
+  ASSERT_TRUE(
+      bus->set_filters({Filter::exact(CanId::standard(0x103).value())}).has_value());
   const auto got = bus->receive(ms(100));
   ASSERT_TRUE(got.has_value());
   EXPECT_EQ(got.value().id().value(), 0x103u);
@@ -361,8 +361,8 @@ TEST(Replay, FiltersApply) {
 TEST(Replay, IsReadOnly) {
   auto bus = LogReplayBus::from_records(synthetic_records());
   ASSERT_TRUE(bus->open().has_value());
-  const auto sent = bus->send(
-      FdFrame::make(CanId::standard(1).value(), nullptr, 1).value());
+  const auto sent =
+      bus->send(FdFrame::make(CanId::standard(1).value(), nullptr, 1).value());
   ASSERT_FALSE(sent.has_value());
   EXPECT_EQ(sent.error().code(), core::ErrorCode::TransportUnsupported);
 }

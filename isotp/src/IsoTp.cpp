@@ -13,8 +13,8 @@ using core::FrameFlags;
 
 /// Round a payload length up to something a CAN FD frame can actually carry.
 std::size_t fd_padded_length(std::size_t want) noexcept {
-  static constexpr std::size_t kLengths[] = {0,  1,  2,  3,  4,  5,  6,  7,
-                                             8,  12, 16, 20, 24, 32, 48, 64};
+  static constexpr std::size_t kLengths[] = {0, 1,  2,  3,  4,  5,  6,  7,
+                                             8, 12, 16, 20, 24, 32, 48, 64};
   for (const std::size_t n : kLengths) {
     if (n >= want) {
       return n;
@@ -27,6 +27,7 @@ std::size_t fd_padded_length(std::size_t want) noexcept {
 
 const char* to_string(TransferResult r) noexcept {
   switch (r) {
+      // clang-format off
     case TransferResult::InProgress:     return "in progress";
     case TransferResult::Ok:             return "ok";
     case TransferResult::TimeoutA:       return "N_As/N_Ar timeout";
@@ -38,15 +39,18 @@ const char* to_string(TransferResult r) noexcept {
     case TransferResult::WaitOverrun:    return "too many wait frames";
     case TransferResult::InvalidPdu:     return "malformed protocol data unit";
     case TransferResult::Aborted:        return "aborted";
+      // clang-format on
   }
   return "unknown";
 }
 
 const char* to_string(FlowStatus s) noexcept {
   switch (s) {
+      // clang-format off
     case FlowStatus::ContinueToSend: return "continue to send";
     case FlowStatus::Wait:           return "wait";
     case FlowStatus::Overflow:       return "overflow";
+      // clang-format on
   }
   return "reserved";
 }
@@ -71,7 +75,8 @@ std::uint8_t ns_to_st_min(std::uint64_t ns) noexcept {
   if (ns < 1000000ULL) {
     // Sub-millisecond: round up into the 100 us grid, clamped to 0xF9.
     const std::uint64_t hundreds = (ns + 99999ULL) / 100000ULL;
-    const std::uint64_t clamped = std::min<std::uint64_t>(std::max<std::uint64_t>(hundreds, 1), 9);
+    const std::uint64_t clamped =
+        std::min<std::uint64_t>(std::max<std::uint64_t>(hundreds, 1), 9);
     return static_cast<std::uint8_t>(0xF0u + clamped);
   }
   const std::uint64_t ms = std::min<std::uint64_t>((ns + 999999ULL) / 1000000ULL, 127);
@@ -137,12 +142,10 @@ FdFrame Sender::make_frame(const std::uint8_t* body, std::size_t body_size) cons
     }
     length = fd_padded_length(length);
   }
-  return FdFrame::make(config_.address.tx_id, buffer.data(), length, flags)
-      .value();
+  return FdFrame::make(config_.address.tx_id, buffer.data(), length, flags).value();
 }
 
-Status Sender::begin(const std::uint8_t* data, std::size_t size,
-                     std::uint64_t now_ns) {
+Status Sender::begin(const std::uint8_t* data, std::size_t size, std::uint64_t now_ns) {
   if (state_ != State::Idle) {
     return Error(ErrorCode::InvalidArgument, "a transfer is already running");
   }
@@ -198,8 +201,7 @@ std::vector<FdFrame> Sender::poll(std::uint64_t now_ns) {
       std::size_t body_size = 0;
       const std::size_t header = config_.address.header_size();
       if (payload_.size() <= kClassicMaxLength) {
-        body[0] = static_cast<std::uint8_t>(
-            0x10u | ((payload_.size() >> 8u) & 0x0Fu));
+        body[0] = static_cast<std::uint8_t>(0x10u | ((payload_.size() >> 8u) & 0x0Fu));
         body[1] = static_cast<std::uint8_t>(payload_.size() & 0xFFu);
         body_size = 2;
       } else {
@@ -469,8 +471,7 @@ void Receiver::on_frame(const FdFrame& frame, std::uint64_t now_ns) {
         state_ = State::Finished;
         return;
       }
-      std::size_t length =
-          (static_cast<std::size_t>(body[0] & 0x0Fu) << 8u) | body[1];
+      std::size_t length = (static_cast<std::size_t>(body[0] & 0x0Fu) << 8u) | body[1];
       std::size_t data_at = 2;
       if (length == 0) {
         // Escape sequence for messages above 4095 bytes.
