@@ -78,7 +78,7 @@ Result<std::unique_ptr<LogWriter>> open_writer(const std::string& path,
 
 /// Parse a single candump line, e.g.
 ///   (1735689600.123456) vcan0 18FEF100#0102030405060708
-/// Exposed because it is genuinely useful on its own, and because it is the
+/// Exposed because it is useful on its own, and because it is the
 /// unit the candump tests target.
 Result<LogRecord> parse_candump_line(std::string_view line);
 std::string format_candump_line(const LogRecord& record);

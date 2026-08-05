@@ -257,19 +257,32 @@ without trusting my implementation. Several are published J1939 parameters (SPN
 position), where the physical result is documented independently of any decoder.
 A codec that generates its own expected values proves nothing.
 
-What I've actually run locally, on GCC 11.4 / aarch64: warning-clean at `-Werror`
-in both `Debug` and `RelWithDebInfo`, all 383 tests, ASan and UBSan clean, the
-`find_package` consumer building and running, both CLI demos end to end, and the
-soak test.
+What I ran locally, on GCC 11.4 / aarch64: warning-clean at `-Werror` in both
+`Debug` and `RelWithDebInfo`, all 383 tests, the `find_package` consumer building
+and running, both CLI demos end to end, and the soak test.
 
-What I haven't: clang, TSan, clang-tidy, clang-format, libFuzzer, and the `vcan0`
-SocketCAN tests. There's no clang and no root in the container I built this in.
-Those CI jobs are written but unproven until a first green run.
+There was no clang and no root in the container I built this in, so the first CI
+run was the first time any of this met clang, TSan, clang-format or a real kernel
+interface. It found three things, all portability rather than logic:
 
-One thing worth keeping from all that: the sanitizer build compiles at `-O1` and
-caught two `-Wsign-conversion` warnings the `-O2` build didn't, because the
-optimiser could no longer prove the ranges. Building at more than one
-optimisation level turned out to be part of the check, not a formality.
+- clang rejects an unused namespace-scope `constexpr` under `-Werror` where GCC
+  says nothing at all. One dead constant in the CLI broke every clang job.
+- Both `NoAllocSelfCheck` tests passed on GCC and failed on clang. C++14 lets a
+  compiler delete a `new`-expression whose allocation it can prove unnecessary,
+  and clang does exactly that at `-O2`, so the self-checks were being optimised
+  out of existence: the failure they exist to catch. They now call
+  `::operator new` directly, which is an ordinary function call and stays put.
+- The allocation trap cannot link under TSan, whose runtime defines
+  `operator new` itself. Sanitizer builds now switch that target off rather than
+  filtering the tests out after the fact.
+
+The second one is my favourite bug in the project. A test that silently stops
+testing anything is worse than no test, and it took a second compiler to show it.
+
+One more thing worth keeping: the sanitizer build compiles at `-O1` and caught
+two `-Wsign-conversion` warnings the `-O2` build didn't, because the optimiser
+could no longer prove the ranges. Building at more than one optimisation level
+turned out to be part of the check, not a formality.
 
 ## What I'd do differently
 

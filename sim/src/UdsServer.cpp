@@ -128,7 +128,7 @@ std::vector<core::FdFrame> UdsServer::poll(std::uint64_t now_ns) {
   }
 
   // While a response is pending, keep emitting 0x78 so the client's P2* logic
-  // is genuinely exercised rather than merely present.
+  // is actually exercised, not just present.
   if (pending_left_ > 0 && !deferred_response_.empty()) {
     --pending_left_;
     sender_ = isotp::Sender(config_.transport);

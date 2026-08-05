@@ -129,23 +129,28 @@ class AllocationTrap {
 /// Sanity check: without it the file would pass just as happily if the
 /// replacement operators were never linked in, which is how this kind of test
 /// usually rots.
+// Both self-checks call ::operator new directly instead of writing `new int`.
+// C++14 lets the compiler delete a new-expression whose allocation it can prove
+// unnecessary, and clang does exactly that at -O2, which made these two tests
+// pass on GCC and fail on clang. A direct call to the operator is an ordinary
+// function call, so it has to happen.
 TEST(NoAllocSelfCheck, TheTrapActuallyFires) {
   EXPECT_DEATH(
       {
         AllocationTrap guard;
-        volatile auto* leak = new int(1);  // NOLINT: deliberate
-        static_cast<void>(leak);
+        void* p = ::operator new(sizeof(int));
+        ::operator delete(p);
       },
       "no-allocation region");
 }
 
 TEST(NoAllocSelfCheck, ReplacementOperatorsAreLinkedIn) {
   const std::size_t before = g_allocations_seen;
-  auto* p = new int(7);
+  void* p = ::operator new(sizeof(int));
   EXPECT_GT(g_allocations_seen, before)
       << "the replacement operator new was not linked in; this whole file is "
          "then vacuous";
-  delete p;
+  ::operator delete(p);
 }
 
 TEST(NoAlloc, SignalCodecAllocatesNothing) {

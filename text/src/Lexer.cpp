@@ -63,7 +63,7 @@ bool is_valid_utf8(const std::string& s) noexcept {
 }
 
 /// Latin-1 to UTF-8. Every byte 0x00..0xFF maps to exactly one code point, so
-/// this never fails -- which is precisely why it is a safe fallback.
+/// this never fails -- which is why it is a safe fallback.
 std::string latin1_to_utf8(const std::string& in) {
   std::string out;
   out.reserve(in.size() + in.size() / 4u);

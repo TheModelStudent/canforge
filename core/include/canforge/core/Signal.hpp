@@ -119,7 +119,7 @@ struct SignalLayout {
   Status validate(std::size_t payload_bytes) const noexcept;
 
   // Precondition for all four: fits(payload_bytes) for the buffer passed.
-  // Checked by validate() at database build time, deliberately not re-checked
+  // Checked by validate() at database build time, not re-checked
   // here so the hot path stays branch-free.
 
   std::uint64_t decode_raw(const std::uint8_t* data) const noexcept;
