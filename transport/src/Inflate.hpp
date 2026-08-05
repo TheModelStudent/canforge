@@ -31,7 +31,7 @@ namespace canforge::transport::detail {
 /// clamped, and the output is bounded during inflation as well, so a
 /// compression bomb cannot get there the slow way either. 256 MiB is far above
 /// any real BLF container and far below anything that threatens a machine.
-inline constexpr std::size_t kMaxInflateOutput = 256u * 1024u * 1024u;
+inline constexpr std::size_t kMaxInflateOutput = std::size_t{256} * 1024 * 1024;
 
 /// Raw DEFLATE, no wrapper. `expected_size` is a hint used to reserve output.
 core::Result<std::vector<std::uint8_t>> inflate_raw(const std::uint8_t* data,
