@@ -279,6 +279,17 @@ interface. It found three things, all portability rather than logic:
 The second one is my favourite bug in the project. A test that silently stops
 testing anything is worse than no test, and it took a second compiler to show it.
 
+The clang-tidy job is still red, and it is the one thing here I have not
+finished. It was misconfigured twice over: `HeaderFilterRegex` matched on the
+word "canforge", and CI checks out at `.../canforge/canforge/`, so it was linting
+the whole of GoogleTest and ftxui; and it was being handed `.hpp` files, which
+have no entry in the compilation database and so get parsed with no include
+paths. Both are fixed. What is left is that the check set turns on `modernize-*`
+and `readability-*` wholesale, and the codebase disagrees with a few thousand of
+those on style. Narrowing that to the checks the project actually wants to
+enforce is real work and I would rather leave it visibly unfinished than silence
+the checks to get a green tick.
+
 One more thing worth keeping: the sanitizer build compiles at `-O1` and caught
 two `-Wsign-conversion` warnings the `-O2` build didn't, because the optimiser
 could no longer prove the ranges. Building at more than one optimisation level
