@@ -4,14 +4,7 @@ A CAN bus toolkit in C++17: DBC parsing, a bit-exact signal codec, a simulated
 multi-ECU bus, ISO-TP and UDS diagnostics, and a terminal dashboard. I wrote and
 tested all of it without touching a single piece of CAN hardware.
 
-> **Screen recordings.** I haven't committed the GIFs yet.
-> [`docs/dashboard.tape`](docs/dashboard.tape) and [`docs/uds.tape`](docs/uds.tape)
-> are [vhs](https://github.com/charmbracelet/vhs) scripts that record them
-> (`vhs docs/dashboard.tape`), and both run on the in-process bus, so you can
-> reproduce them yourself with no hardware and no root. The captured text of the
-> UDS firmware download is in [`docs/uds-session.txt`](docs/uds-session.txt) if
-> you'd rather just read it.
-
+[![ci](https://github.com/TheModelStudent/canforge/actions/workflows/ci.yml/badge.svg)](https://github.com/TheModelStudent/canforge/actions/workflows/ci.yml)
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)
 ![tests 383](https://img.shields.io/badge/tests-383%20passing-brightgreen)
 ![licence MIT](https://img.shields.io/badge/licence-MIT-blue)
@@ -64,6 +57,22 @@ module, or a CAN interface. Against a real kernel interface instead:
 sudo modprobe vcan && sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0
 ./build/cli/canforge sim --config sim/tests/data/vehicle.cfg --bus vcan0
 ```
+
+> **Screen recordings.** I haven't committed the GIFs yet.
+> [`docs/dashboard.tape`](docs/dashboard.tape) and [`docs/uds.tape`](docs/uds.tape)
+> are [vhs](https://github.com/charmbracelet/vhs) scripts that record them
+> (`vhs docs/dashboard.tape`), and both run on the in-process bus, so you can
+> reproduce them yourself with no hardware and no root. The captured text of the
+> UDS firmware download is in [`docs/uds-session.txt`](docs/uds-session.txt) if
+> you'd rather just read it.
+
+## Where to start reading
+
+`core/src/Signal.cpp` is the bit extraction, and
+`core/tests/test_signal_golden.cpp` is the 78 layouts I worked out by hand to
+check it. Reading those two together is the fastest way to see whether I know
+what I'm doing. After that, `isotp/src/Transport.cpp` for the state machine and
+`sim/src/UdsServer.cpp` for the diagnostic side.
 
 ## How it fits together
 
