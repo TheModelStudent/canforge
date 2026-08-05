@@ -4,15 +4,13 @@ A CAN bus toolkit in C++17: DBC parsing, a bit-exact signal codec, a simulated
 multi-ECU bus, ISO-TP and UDS diagnostics, and a terminal dashboard. I wrote and
 tested all of it without touching a single piece of CAN hardware.
 
-![dashboard](docs/dashboard.gif)
-
-![uds firmware download](docs/uds.gif)
-
-> Neither GIF is committed. `docs/dashboard.tape` and `docs/uds.tape` are
-> [vhs](https://github.com/charmbracelet/vhs) scripts that record them, e.g.
-> `vhs docs/dashboard.tape`. Both run on the in-process bus, so reproducing them
-> needs no hardware and no root. If you'd rather just read the UDS run, the
-> captured text is in [docs/uds-session.txt](docs/uds-session.txt).
+> **Screen recordings.** I haven't committed the GIFs yet.
+> [`docs/dashboard.tape`](docs/dashboard.tape) and [`docs/uds.tape`](docs/uds.tape)
+> are [vhs](https://github.com/charmbracelet/vhs) scripts that record them
+> (`vhs docs/dashboard.tape`), and both run on the in-process bus, so you can
+> reproduce them yourself with no hardware and no root. The captured text of the
+> UDS firmware download is in [`docs/uds-session.txt`](docs/uds-session.txt) if
+> you'd rather just read it.
 
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)
 ![tests 383](https://img.shields.io/badge/tests-383%20passing-brightgreen)
