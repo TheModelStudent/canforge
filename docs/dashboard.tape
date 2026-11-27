@@ -7,7 +7,7 @@ Set Height 800
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 40ms
 
-Type "./build/cli/canforge dash --config sim/tests/data/vehicle.cfg --virtual"
+Type "./build/cli/canforge dash --config sim/tests/data/vehicle.cfg --database dbc/tests/data/powertrain.dbc --virtual"
 Enter
 Sleep 4s
 

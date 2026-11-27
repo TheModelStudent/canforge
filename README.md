@@ -6,7 +6,7 @@ tested all of it without touching a single piece of CAN hardware.
 
 [![ci](https://github.com/TheModelStudent/canforge/actions/workflows/ci.yml/badge.svg)](https://github.com/TheModelStudent/canforge/actions/workflows/ci.yml)
 ![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)
-![tests 383](https://img.shields.io/badge/tests-383%20passing-brightgreen)
+![tests 434](https://img.shields.io/badge/tests-434%20passing-brightgreen)
 ![licence MIT](https://img.shields.io/badge/licence-MIT-blue)
 
 ## Why
@@ -43,7 +43,8 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo && cmake --build 
 ./build/cli/canforge info --database dbc/tests/data/powertrain.dbc
 
 # watch a simulated vehicle on a simulated bus
-./build/cli/canforge dash --config sim/tests/data/vehicle.cfg --virtual
+./build/cli/canforge dash --config sim/tests/data/vehicle.cfg \
+    --database dbc/tests/data/powertrain.dbc --virtual
 
 # flash firmware onto a simulated ECU over UDS
 head -c 2048 /dev/urandom > firmware.bin
@@ -55,8 +56,77 @@ module, or a CAN interface. Against a real kernel interface instead:
 
 ```sh
 sudo modprobe vcan && sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0
-./build/cli/canforge sim --config sim/tests/data/vehicle.cfg --bus vcan0
+./build/cli/canforge sim --config sim/tests/data/vehicle.cfg \
+    --database dbc/tests/data/powertrain.dbc --bus vcan0
+
+# in a second terminal: the dashboard as a passive listener on the same interface
+./build/cli/canforge dash --config sim/tests/data/vehicle.cfg \
+    --database dbc/tests/data/powertrain.dbc --bus vcan0
 ```
+
+Without `--virtual` the dashboard does not run the config's nodes itself. It shows
+whatever is on the wire, decoded with the config's database, so it works as a bus
+monitor next to real or simulated ECUs it knows nothing else about.
+
+With an ECU on that interface that speaks UDS, `diag` is a workshop tester. Actions
+run in the order given, and every exchange goes through the same poll-driven client
+the tests use:
+
+```sh
+./build/cli/canforge diag --bus vcan0 --read-did F190 --read-dtc
+./build/cli/canforge diag --bus vcan0 --session extended --unlock --write-did 0200=3C
+./build/cli/canforge diag --bus vcan0 --read-did 0100 --did-file dids.json
+```
+
+```
+read 0100 Temperatures
+  coolant                  25.2 degC
+  cell 1                   26.0 degC
+read-dtc mask FF           1 DTC
+  P1A23-00  0x2F  testFailed, testFailedThisOperationCycle, pendingDTC, confirmedDTC, testFailedSinceLastClear
+```
+
+What the bytes of a data identifier mean is the ECU's business, so it is not compiled
+in: `--did-file` names a JSON file with each identifier's fields (offset, size,
+factor, offset, unit, named values), and one generic decoder prints them. Without
+the file the bytes are shown in hex. The format is described at the top of
+[`uds/include/canforge/uds/DidFile.hpp`](uds/include/canforge/uds/DidFile.hpp).
+
+With an ECU that has an A/B bootloader, `flash` runs a whole update. It reads a
+release package (a folder with `manifest.json` and one image per slot), asks the ECU
+which slot it runs from, and sends the image built for the other one. The steps are
+programming session, unlock, erase, download, image check and restart. Then it
+waits until the new version runs and confirms itself. Each step prints one line,
+and a negative response ends the run with the NRC's name:
+
+```sh
+./build/cli/canforge flash --bus vcan0 --package dist/btms-0.5.1
+./build/cli/canforge flash --bus vcan0 --package spoiled/ --expect-reject   # a test: the ECU must refuse it
+./build/cli/canforge flash --bus vcan0 --vcu-standby --package dist/btms-1.0.1
+```
+
+The BTMS ECU accepts an update only while the vehicle is parked, that is while its
+vehicle controller commands STANDBY; otherwise it answers the programming request with
+`0x22` (conditions not correct). `--vcu-standby` plays that controller for as long as
+the update runs: `VCU_Cmd` (0x100) every 100 ms, mode STANDBY, with its alive counter
+and CRC. It refuses to start if another node already sends 0x100, so stop
+`canforge sim` first.
+
+The package layout and the exact request sequence are at the top of
+[`cli/src/Flash.hpp`](cli/src/Flash.hpp).
+
+And for firmware that cannot link a DBC parser, the same database as plain C:
+
+```sh
+./build/cli/canforge gen-c --database dbc/tests/data/powertrain.dbc \
+    --node ECM --prefix pt --out generated/      # writes pt_com.h and pt_com.c
+```
+
+`--raw` is for an 8-bit part without floating point: every field holds its
+signal's raw integer, scaled or not, and the limit macros give the raw range.
+Pack cuts a value to the signal's bits but does not clamp it to the database's
+`[min|max]`, so a raw marker outside it (255 for "sensor broken", say) still
+reaches the wire.
 
 > **Screen recordings.** I haven't committed the GIFs yet.
 > [`docs/dashboard.tape`](docs/dashboard.tape) and [`docs/uds.tape`](docs/uds.tape)
@@ -65,6 +135,21 @@ sudo modprobe vcan && sudo ip link add dev vcan0 type vcan && sudo ip link set u
 > reproduce them yourself with no hardware and no root. The captured text of the
 > UDS firmware download is in [`docs/uds-session.txt`](docs/uds-session.txt) if
 > you'd rather just read it.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `sim` | runs the vehicle simulator on a bus |
+| `dash` | live dashboard: trace, grouped, plot, statistics, transmit |
+| `uds` | runs a diagnostic session against a simulated ECU |
+| `diag` | talks UDS to an ECU on a bus: sessions, security access, data identifiers, trouble codes |
+| `dump` | decodes traffic from a bus or a log file |
+| `info` | summarises a DBC database |
+| `gen-c` | generates C pack and unpack code from a DBC database |
+| `flash` | updates an ECU's firmware over UDS: erase, download, check, restart |
+
+`canforge --help` lists every option.
 
 ## Where to start reading
 
@@ -86,6 +171,7 @@ graph BT
     transport["<b>transport/</b><br/>IBus · SocketCAN · VirtualBus<br/>candump · ASC · BLF · inflate"]
     isotp["<b>isotp/</b><br/>ISO 15765-2"]
     dbc["<b>dbc/</b><br/>DBC parser and writer"]
+    codegen["<b>codegen/</b><br/>DBC to C: gen-c"]
     uds["<b>uds/</b><br/>ISO 14229 client"]
     sim["<b>sim/</b><br/>sources · plant · ECUs<br/>faults · UDS server"]
     tuimodel["<b>tui/ViewModel</b><br/>headless, testable"]
@@ -97,7 +183,9 @@ graph BT
     isotp --> core
     dbc --> core
     dbc --> text
+    codegen --> core
     uds --> isotp
+    uds --> transport
     tuimodel --> core
     tuimodel --> transport
     sim --> core
@@ -107,6 +195,7 @@ graph BT
     sim --> uds
     tui --> tuimodel
     cli --> dbc
+    cli --> codegen
     cli --> sim
     cli --> uds
     cli --> tui
@@ -115,7 +204,7 @@ graph BT
     classDef dep fill:#1e3a5f,stroke:#3b82f6,color:#fff
     classDef ui fill:#5c3317,stroke:#f59e0b,color:#fff
     class core nodep
-    class text,transport,isotp,dbc,uds,sim dep
+    class text,transport,isotp,dbc,codegen,uds,sim dep
     class tuimodel,tui,cli ui
 ```
 
@@ -162,7 +251,22 @@ zlib dependency and BLF is the format real automotive logs actually arrive in.
 **Diagnostics.** ISO-TP with segmentation, flow control, the `FF_DL = 0` escape
 for transfers over 4095 bytes, and STmin down to 100 µs. On top of that a UDS
 client covering ten services, including a complete firmware download verified
-byte by byte against a simulated ECU.
+byte by byte against a simulated ECU. `BusLink` runs that client on any bus behind
+`IBus`, which is what lets `canforge diag` talk to a real ECU over SocketCAN, and a
+small JSON reader (no dependency, like everything else) loads the DID descriptions
+it decodes responses with.
+
+**C code generation.** `gen-c` turns a database into one struct, one pack and one
+unpack function per message: C11, `<stdint.h>` and `<stdbool.h>` only, no heap, no
+loops, every signal one shift-and-mask statement per byte it touches. Bit positions
+come from the same canonical-bit-space arithmetic the runtime codec uses, so Intel
+and Motorola share a single code path here too. The test compiles the output with a
+real C compiler under `-Werror -Wconversion -pedantic`, feeds it 20,000 random value
+sets per message, and requires every packed byte to equal what `Signal::encode`
+produces. A scaled signal becomes a `float` only where single precision can still
+resolve one raw step; beyond that it becomes a `double`, and with `--raw` it
+stays the raw integer. Multiplexed messages and IEEE-float signals are skipped,
+and the tool says so.
 
 **Simulator and dashboard.** A longitudinal vehicle model drives ECUs that
 transmit on a schedule with rolling counters and CRCs, plus seeded fault
@@ -170,7 +274,7 @@ injection. The dashboard shows a live trace, per-message period and jitter, bus
 load, and signal plots. All of the dashboard's logic lives in a `ViewModel` with
 no ftxui in it, which is the only reason any of it is testable.
 
-Every claim above has a test behind it. `ctest --test-dir build` runs all 383,
+Every claim above has a test behind it. `ctest --test-dir build` runs all 434,
 and the suite breakdown is further down.
 
 ## Benchmarks
@@ -244,16 +348,17 @@ found later becomes a permanent regression test.
 
 ## Tests
 
-383 of them.
+434 of them.
 
 | suite | tests | covers |
 |---|---:|---|
 | `core_tests` | 83 | Result, CanId, frame layout, DLC tables, 78 hand-computed codec vectors, 8 property tests over 20,000 layouts each |
 | `core_no_alloc_test` | 5 | the allocation trap, and its own self-check |
 | `dbc_tests` | 65 | lexer, parser, diagnostics, multiplexing, round-trip, one case per error class |
+| `codegen_tests` | 22 | naming and typing rules, and generated C compiled and compared with the runtime codec byte for byte, Intel and Motorola, scaled and `--raw` |
 | `transport_tests` | 69 | timing, arbitration, filters, inflate, three log formats, replay (6 skipped without vcan0) |
 | `isotp_tests` | 41 | segmentation, every timeout, every error, STmin to the microsecond, property tests |
-| `uds_tests` | 34 | every service, the NRC table, responsePending, a full 4 KB firmware download |
+| `uds_tests` | 63 | every service, the NRC table, responsePending, a full 4 KB firmware download; the client on a bus through `BusLink` (segmented responses, keepalive, timeouts, foreign traffic); the DID file reader and decoder |
 | `sim_tests` | 57 | signal sources, plant physics, ECU scheduling, counters and checksums, config diagnostics, every fault |
 | `tui_tests` | 25 | period and jitter measurement, filtering, ring buffers, sparkline scaling, thread safety |
 | `fuzz_corpus_*` | 4 | replay every committed fuzzing input |
@@ -363,6 +468,21 @@ vectors. RFC 1951 and RFC 1950 for DEFLATE and zlib.
 DBC has no public specification. The format is whatever Vector's CANdb++ emits,
 so every deviation this parser tolerates is documented at the point where it's
 handled, naming the tool that produces it.
+
+## Used in btms-ecu
+
+canforge grew up next to [btms-ecu](https://github.com/TheModelStudent/btms-ecu), a
+battery thermal management ECU (STM32H743, FreeRTOS) that runs in Renode on a virtual
+CAN bus. Every part of canforge has a job there:
+
+| canforge | In btms-ecu |
+| --- | --- |
+| `gen-c` | `services/com/btms_com.c`, the ECU's whole CAN layer, from `dbc/btms.dbc`; `gen-c --raw` the sensor node's (an ATmega328P with no floating point). CI regenerates both and fails on any difference |
+| `sim` | plays the vehicle controller (`sim/canforge/vcu.cfg`), and loads the bus in scenario S08 |
+| `dash` | the dashboard pane of `sim/run_vehicle.sh --tmux` and of the README's demo |
+| `diag` | trouble codes, data identifiers and runtime statistics, with the ECU's DID file `dbc/btms_dids.json` |
+| `flash` | every firmware update the ECU's tests make: a good release, a corrupt or unsigned one refused, a hanging one rolled back, an update while parked (`--vcu-standby`) |
+| the libraries | the second, independent implementation the ECU's host tests check its own ISO-TP, UDS and signal packing against |
 
 ## Licence
 
