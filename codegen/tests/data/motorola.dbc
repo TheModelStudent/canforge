@@ -1,0 +1,51 @@
+VERSION "canforge gen-c layout torture test"
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	BA_DEF_DEF_
+
+BS_:
+
+BU_: A B
+
+
+BO_ 512 MotoPacked: 8 A
+ SG_ Sel3 : 7|3@0+ (1,0) [0|7] "" B
+ SG_ Temp13 : 4|13@0- (0.25,-100) [-500|500] "degC" B
+ SG_ Pos12 : 23|12@0+ (0.1,0) [0|409.5] "mm" B
+ SG_ Nib4 : 27|4@0+ (1,0) [0|9] "" B
+ SG_ Wide20 : 39|20@0- (1,0) [0|0] "" B
+ SG_ Volt11 : 51|11@0+ (2,10) [10|4104] "mV" B
+ SG_ Flag1 : 56|1@0+ (1,0) [0|1] "" B
+
+BO_ 513 MotoFull: 8 A
+ SG_ Counter64 : 7|64@0+ (1,0) [0|0] "" B
+
+BO_ 514 MixedOrders: 8 B
+ SG_ IntelS10 : 0|10@1- (0.5,0) [-200|200] "" A
+ SG_ IntelU6 : 10|6@1+ (1,0) [0|63] "" A
+ SG_ Moto24 : 23|24@0+ (0.001,0) [0|16777.215] "" A
+ SG_ MotoS5 : 47|5@0- (1,0) [-16|15] "" A
+ SG_ IntelU3 : 40|3@1+ (1,0) [0|5] "" A
+ SG_ IntelS16 : 48|16@1- (0.001,0) [-30|30] "" A
+
+BO_ 515 NegFactor: 8 A
+ SG_ Falling : 0|8@1+ (-0.5,100) [0|100] "%" B
+ SG_ Wide32 : 8|32@1- (0.001,0) [0|0] "" B
+ SG_ MotoU17 : 47|17@0+ (1,1000) [1000|132071] "" B
+ SG_ IntelU7 : 56|7@1+ (1,0) [0|0] "" B
+
+BO_ 2147484160 WideIntel: 8 A
+ SG_ Raw40 : 3|40@1+ (1,0) [0|0] "" B
+ SG_ Raw21 : 43|21@1- (1,0) [0|0] "" B
+
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_ "GenMsgCycleTime" BO_ 512 10;
+BA_ "GenMsgCycleTime" BO_ 514 250;
+VAL_ 512 Sel3 0 "Off" 1 "Low power" 2 "On" 7 "Not available" ;
