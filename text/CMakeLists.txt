@@ -1,5 +1,6 @@
 add_library(canforge_text
   src/Diagnostic.cpp
+  src/Json.cpp
   src/Lexer.cpp)
 add_library(canforge::text ALIAS canforge_text)
 
